@@ -1,94 +1,143 @@
-# 10x Astro Starter
+# Activity Logger
 
-A modern, opinionated starter template for building fast, accessible, and AI-friendly web applications.
+A minimalist, web-based tool designed to simplify the tracking and historical viewing of personal run and walk activities. Built with modern web technologies to provide a fast, accessible, and secure platform for activity logging.
 
-## Tech Stack
+## 📋 Table of Contents
 
-- [Astro](https://astro.build/) v5.5.5 - Modern web framework for building fast, content-focused websites
-- [React](https://react.dev/) v19.0.0 - UI library for building interactive components
-- [TypeScript](https://www.typescriptlang.org/) v5 - Type-safe JavaScript
-- [Tailwind CSS](https://tailwindcss.com/) v4.0.17 - Utility-first CSS framework
+- [Project Description](#project-description)
+- [Tech Stack](#tech-stack)
+- [Getting Started Locally](#getting-started-locally)
+- [Available Scripts](#available-scripts)
+- [Project Scope](#project-scope)
+- [Project Status](#project-status)
+- [License](#license)
 
-## Prerequisites
+## 🎯 Project Description
 
-- Node.js v22.14.0 (as specified in `.nvmrc`)
-- npm (comes with Node.js)
+The Activity Logger addresses the common problem of manual activity tracking being cumbersome and historical data becoming easily lost or hard to recall over time. It provides a straightforward CRUD (Create, Read, Update, Delete) interface for activity data, allowing users to:
 
-## Getting Started
+- Track run and walk activities with essential data (date, duration, activity type, optional distance)
+- View historical activities in a simple, organized list
+- Edit or delete existing activity entries
+- Access their data securely with user authentication
 
-1. Clone the repository:
+The application follows a **mobile-first** and **minimalist design** approach, ensuring optimal user experience across all devices while maintaining GDPR compliance and security standards.
 
-```bash
-git clone https://github.com/przeprogramowani/10x-astro-starter.git
-cd 10x-astro-starter
-```
+## 🛠 Tech Stack
 
-2. Install dependencies:
+### Frontend
+- **Astro 5** - Fast, efficient website framework with minimal JavaScript
+- **React 19** - Interactive components where needed
+- **TypeScript 5** - Static type checking and enhanced IDE support
+- **Tailwind 4** - Utility-first CSS framework for styling
+- **Shadcn/ui** - Accessible React component library
 
-```bash
-npm install
-```
+### Backend
+- **Supabase** - Backend-as-a-Service providing:
+  - PostgreSQL database
+  - Built-in user authentication
+  - Multiple language SDKs
+  - Open-source solution with self-hosting options
 
-3. Run the development server:
+### CI/CD and Hosting
+- **GitHub Actions** - CI/CD pipeline automation
+- **DigitalOcean** - Application hosting via Docker containers
 
-```bash
-npm run dev
-```
+## 🚀 Getting Started Locally
 
-4. Build for production:
+### Prerequisites
+- Node.js version 22.14.0 (see `.nvmrc`)
+- npm or yarn package manager
 
-```bash
-npm run build
-```
+### Installation
 
-## Available Scripts
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd astrorunner
+   ```
 
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build
-- `npm run lint` - Run ESLint
-- `npm run lint:fix` - Fix ESLint issues
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-## Project Structure
+3. **Set up environment variables**
+   ```bash
+   # Create .env file with Supabase configuration
+   # Add your Supabase URL and API keys
+   ```
 
-```md
-.
-├── src/
-│   ├── layouts/    # Astro layouts
-│   ├── pages/      # Astro pages
-│   │   └── api/    # API endpoints
-│   ├── components/ # UI components (Astro & React)
-│   └── assets/     # Static assets
-├── public/         # Public assets
-```
+4. **Start the development server**
+   ```bash
+   npm run dev
+   ```
 
-## AI Development Support
+5. **Open your browser**
+   Navigate to `http://localhost:4321` to view the application.
 
-This project is configured with AI development tools to enhance the development experience, providing guidelines for:
+## 📜 Available Scripts
 
-- Project structure
-- Coding practices
-- Frontend development
-- Styling with Tailwind
-- Accessibility best practices
-- Astro and React guidelines
+| Script | Description |
+|--------|-------------|
+| `npm run dev` | Start the development server |
+| `npm run build` | Build the application for production |
+| `npm run preview` | Preview the production build locally |
+| `npm run astro` | Run Astro CLI commands |
+| `npm run lint` | Run ESLint to check for code issues |
+| `npm run lint:fix` | Automatically fix ESLint issues |
+| `npm run format` | Format code using Prettier |
 
-### Cursor IDE
+## 🎯 Project Scope
 
-The project includes AI rules in `.cursor/rules/` directory that help Cursor IDE understand the project structure and provide better code suggestions.
+### MVP Features (Phase 1)
+- ✅ User registration and authentication
+- ✅ Secure login with password reset functionality
+- ✅ Activity creation with required fields (Date, Duration, Activity Type)
+- ✅ Optional distance tracking
+- ✅ Activity viewing in list format
+- ✅ Activity editing and deletion with confirmation
+- ✅ Mobile-first responsive design
+- ✅ HTTPS enforcement and GDPR compliance
 
-### GitHub Copilot
+### Deferred Features (Phase 2)
+- 📅 Calendar view with activity highlights
+- 📊 Statistics page with aggregate data
+- 📈 Advanced analytics and reporting
 
-AI instructions for GitHub Copilot are available in `.github/copilot-instructions.md`
+### Out of Scope
+- Mobile and watch applications
+- Data sharing between users
+- Complex run data analysis
+- Data export functionality
+- Email verification for new accounts
 
-### Windsurf
+## 📊 Project Status
 
-The `.windsurfrules` file contains AI configuration for Windsurf.
+**Current Version**: 0.0.1  
+**Status**: Development Phase  
+**Phase**: MVP Development
 
-## Contributing
+The project is currently in active development, focusing on implementing the core MVP features outlined in the Product Requirements Document. The application is being built with a focus on security, performance, and user experience.
 
-Please follow the AI guidelines and coding practices defined in the AI configuration files when contributing to this project.
+### Development Progress
+- ✅ Project setup and configuration
+- ✅ Tech stack implementation
+- 🔄 Core CRUD functionality (in progress)
+- ⏳ User authentication system
+- ⏳ Activity management interface
+- ⏳ Mobile-responsive design
 
-## License
+## 📄 License
 
-MIT
+This project is currently in development. License information will be added upon project completion.
+
+---
+
+## 🤝 Contributing
+
+This project is in active development. Contribution guidelines will be added as the project matures.
+
+## 📞 Support
+
+For questions or support regarding this project, please refer to the project documentation or create an issue in the repository.
