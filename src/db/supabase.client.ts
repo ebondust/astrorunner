@@ -8,8 +8,15 @@ const supabaseAnonKey = import.meta.env.SUPABASE_KEY;
 // In production, this should use proper authentication
 const supabaseServiceRoleKey = import.meta.env.SUPABASE_SERVICE_ROLE_KEY;
 
+// Debug logging
+console.log('Supabase Client Init:');
+console.log('  URL:', supabaseUrl);
+console.log('  Anon Key:', supabaseAnonKey ? `${supabaseAnonKey.substring(0, 20)}...` : 'NOT SET');
+console.log('  Service Role Key:', supabaseServiceRoleKey ? `${supabaseServiceRoleKey.substring(0, 20)}...` : 'NOT SET');
+
 // Use service role key if available (development), otherwise use anon key (production)
 const supabaseKey = supabaseServiceRoleKey || supabaseAnonKey;
+console.log('  Using:', supabaseServiceRoleKey ? 'SERVICE ROLE KEY (bypasses RLS)' : 'ANON KEY (enforces RLS)');
 
 export const supabaseClient = createClient<Database>(supabaseUrl, supabaseKey);
 

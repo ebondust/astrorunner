@@ -29,6 +29,7 @@ export async function POST(context: APIContext): Promise<Response> {
 
     // Step 2: Use default user ID (authentication will be implemented later)
     const userId = DEFAULT_USER_ID;
+    console.log(`[${correlationId}] Using userId:`, userId, 'Type:', typeof userId);
 
     // Step 3: Validate Content-Type header
     const contentType = context.request.headers.get("content-type");
@@ -64,6 +65,7 @@ export async function POST(context: APIContext): Promise<Response> {
     // Step 5: Create activity via service
     let activityEntity;
     try {
+      console.log(`[${correlationId}] Calling createActivity with userId:`, userId);
       activityEntity = await createActivity(supabase, userId, validatedCommand);
     } catch (error) {
       // Handle specific validation errors from service/mapper
