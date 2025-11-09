@@ -13,6 +13,12 @@ export default defineConfig({
   server: { port: 3000 },
   vite: {
     plugins: [tailwindcss()],
+    build: {
+      sourcemap: true,
+    },
+    server: {
+      sourcemapIgnoreList: false,
+    },
   },
   adapter: node({
     mode: "standalone",
