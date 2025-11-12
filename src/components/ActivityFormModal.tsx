@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useActivityForm } from "./hooks/useActivityForm";
+import { durationInputToISO8601, kmToMeters } from "@/lib/utils/date";
 
 interface ActivityFormModalProps {
   open: boolean;
@@ -69,9 +70,9 @@ export function ActivityFormModal({
     try {
       const command: CreateActivityCommand = {
         activityDate: formState.activityDate,
-        duration: formState.duration,
+        duration: durationInputToISO8601(formState.duration), // Convert 1.30 to PT1H30M
         activityType: formState.activityType,
-        distanceMeters: formState.distanceMeters,
+        distanceMeters: formState.distanceMeters ? kmToMeters(formState.distanceMeters) : undefined, // Convert km to meters
       };
 
       await onSubmit(command);
@@ -175,14 +176,14 @@ export function ActivityFormModal({
               <Input
                 id="duration"
                 type="text"
-                placeholder="00:45:00 or PT45M"
+                placeholder="1.30 or 90"
                 value={formState.duration}
                 onChange={(e) => setField("duration", e.target.value)}
                 aria-invalid={!!errors.duration}
                 aria-describedby={errors.duration ? "duration-error" : undefined}
               />
               <p className="text-xs text-muted-foreground">
-                Format: HH:MM:SS (e.g., 01:30:00) or ISO-8601 (e.g., PT1H30M)
+                Format: HH.MM (e.g., 1.30), HH:MM (e.g., 1:30), or minutes (e.g., 90)
               </p>
               {errors.duration && (
                 <p id="duration-error" className="text-sm text-destructive">
@@ -193,11 +194,11 @@ export function ActivityFormModal({
 
             {/* Distance */}
             <div className="grid gap-2">
-              <Label htmlFor="distanceMeters">Distance (meters)</Label>
+              <Label htmlFor="distanceKm">Distance (km)</Label>
               <Input
-                id="distanceMeters"
+                id="distanceKm"
                 type="number"
-                step="0.001"
+                step="0.01"
                 min="0"
                 placeholder="Optional"
                 value={formState.distanceMeters ?? ""}
@@ -210,6 +211,9 @@ export function ActivityFormModal({
                 aria-invalid={!!errors.distanceMeters}
                 aria-describedby={errors.distanceMeters ? "distanceMeters-error" : undefined}
               />
+              <p className="text-xs text-muted-foreground">
+                Max 2 decimal places (e.g., 5.25 km)
+              </p>
               {errors.distanceMeters && (
                 <p id="distanceMeters-error" className="text-sm text-destructive">
                   {errors.distanceMeters}

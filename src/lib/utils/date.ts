@@ -162,3 +162,73 @@ export function toISODateTime(date: Date): string {
 export function parseISODate(isoDate: string): Date {
   return new Date(isoDate);
 }
+
+/**
+ * Convert duration from user input format (HH.MM, HH:MM, or minutes) to ISO-8601
+ * - "10.1" or "10:1" → PT10H1M (10 hours 1 minute)
+ * - "10.10" or "10:10" → PT10H10M (10 hours 10 minutes)
+ * - "10" → PT10M (10 minutes)
+ */
+export function durationInputToISO8601(input: string): string {
+  // Handle HH.MM or HH:MM format
+  const timeMatch = input.match(/^(\d{1,2})([:.])(\d{2})$/);
+  if (timeMatch) {
+    const hours = parseInt(timeMatch[1], 10);
+    const minutes = parseInt(timeMatch[3], 10);
+
+    const parts: string[] = [];
+    if (hours > 0) parts.push(`${hours}H`);
+    if (minutes > 0) parts.push(`${minutes}M`);
+
+    return `PT${parts.join('')}`;
+  }
+
+  // Handle single number (minutes)
+  const singleMatch = input.match(/^(\d+)$/);
+  if (singleMatch) {
+    const minutes = parseInt(singleMatch[1], 10);
+    return `PT${minutes}M`;
+  }
+
+  // Fallback (shouldn't reach here if validation passed)
+  return input;
+}
+
+/**
+ * Convert duration from ISO-8601 to user-friendly input format (HH.MM)
+ * - PT10H1M → "10.1"
+ * - PT10H10M → "10.10"
+ * - PT10M → "10" (or "0.10" depending on preference)
+ */
+export function iso8601ToDurationInput(iso8601: string): string {
+  // Parse ISO-8601 duration
+  const match = iso8601.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+  if (!match) {
+    return iso8601; // Return as-is if can't parse
+  }
+
+  const hours = parseInt(match[1] || '0', 10);
+  const minutes = parseInt(match[2] || '0', 10);
+
+  // If we have hours, return in HH.MM format
+  if (hours > 0) {
+    return `${hours}.${String(minutes).padStart(2, '0')}`;
+  }
+
+  // If only minutes, return as single number
+  return String(minutes);
+}
+
+/**
+ * Convert distance from km to meters (for storage)
+ */
+export function kmToMeters(km: number): number {
+  return km * 1000;
+}
+
+/**
+ * Convert distance from meters to km (for display/input)
+ */
+export function metersToKm(meters: number): number {
+  return meters / 1000;
+}

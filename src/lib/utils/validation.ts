@@ -24,50 +24,49 @@ export function validateActivityDate(date: string): string | undefined {
 }
 
 /**
- * Validate duration in ISO-8601 or HH:MM:SS format
+ * Validate duration in HH.MM, HH:MM, or single number format
+ * - HH.MM or HH:MM → Hours and minutes
+ * - Single number → Minutes
  */
 export function validateDuration(duration: string): string | undefined {
   if (!duration) {
     return "Duration is required";
   }
 
-  // Check HH:MM:SS format
-  const timeRegex = /^(\d{2}):(\d{2}):(\d{2})$/;
+  // Try HH.MM or HH:MM format
+  const timeRegex = /^(\d{1,2})([:.])(\d{2})$/;
   const timeMatch = duration.match(timeRegex);
 
   if (timeMatch) {
     const hours = parseInt(timeMatch[1], 10);
-    const minutes = parseInt(timeMatch[2], 10);
-    const seconds = parseInt(timeMatch[3], 10);
+    const minutes = parseInt(timeMatch[3], 10);
 
-    if (minutes >= 60 || seconds >= 60) {
-      return "Invalid time format";
+    if (minutes >= 60) {
+      return "Minutes must be less than 60";
     }
 
-    if (hours === 0 && minutes === 0 && seconds === 0) {
+    if (hours === 0 && minutes === 0) {
       return "Duration must be greater than 0";
     }
 
     return undefined;
   }
 
-  // Check ISO-8601 duration format (PT1H30M, PT45M, etc.)
-  const iso8601Regex = /^PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/;
-  const iso8601Match = duration.match(iso8601Regex);
+  // Try single number (minutes)
+  const singleNumberRegex = /^(\d+)$/;
+  const singleMatch = duration.match(singleNumberRegex);
 
-  if (iso8601Match) {
-    const hours = parseInt(iso8601Match[1] || '0', 10);
-    const minutes = parseInt(iso8601Match[2] || '0', 10);
-    const seconds = parseInt(iso8601Match[3] || '0', 10);
+  if (singleMatch) {
+    const minutes = parseInt(singleMatch[1], 10);
 
-    if (hours === 0 && minutes === 0 && seconds === 0) {
+    if (minutes === 0) {
       return "Duration must be greater than 0";
     }
 
     return undefined;
   }
 
-  return "Duration must be in ISO-8601 format (PT45M) or HH:MM:SS format (00:45:00)";
+  return "Duration must be in HH.MM (e.g., 1.30), HH:MM (e.g., 1:30), or minutes (e.g., 90) format";
 }
 
 /**
@@ -87,7 +86,7 @@ export function validateActivityType(type: string | undefined): string | undefin
 }
 
 /**
- * Validate distance in meters
+ * Validate distance in kilometers
  */
 export function validateDistance(distance: number | undefined): string | undefined {
   // Distance is optional
@@ -103,14 +102,14 @@ export function validateDistance(distance: number | undefined): string | undefin
     return "Distance must be greater than or equal to 0";
   }
 
-  // Check decimal places (max 3)
+  // Check decimal places (max 2 for km)
   const decimalPlaces = (distance.toString().split('.')[1] || '').length;
-  if (decimalPlaces > 3) {
-    return "Distance must have at most 3 decimal places";
+  if (decimalPlaces > 2) {
+    return "Distance must have at most 2 decimal places";
   }
 
-  // Check maximum value (1 billion meters = 1 million km, reasonable max)
-  if (distance > 1000000000) {
+  // Check maximum value (1 million km, reasonable max)
+  if (distance > 1000000) {
     return "Distance is too large";
   }
 

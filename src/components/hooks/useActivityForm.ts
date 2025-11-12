@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import type { ActivityDto, ActivityType } from '@/types';
 import type { ActivityFormState, ActivityFormErrors } from '@/frontend-types';
 import { validateActivityForm, hasFormErrors } from '@/lib/utils/validation';
+import { iso8601ToDurationInput, metersToKm } from '@/lib/utils/date';
 
 interface UseActivityFormReturn {
   formState: ActivityFormState;
@@ -62,9 +63,9 @@ export function useActivityForm(): UseActivityFormReturn {
   const initializeFromActivity = useCallback((activity: ActivityDto) => {
     setFormState({
       activityDate: activity.activityDate,
-      duration: activity.duration,
+      duration: iso8601ToDurationInput(activity.duration), // Convert PT1H30M to 1.30
       activityType: activity.activityType,
-      distanceMeters: activity.distanceMeters,
+      distanceMeters: activity.distanceMeters ? metersToKm(activity.distanceMeters) : undefined, // Convert meters to km
     });
     setErrors({});
   }, []);
