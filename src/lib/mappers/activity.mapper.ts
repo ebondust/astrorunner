@@ -11,35 +11,55 @@ function intervalToIso8601(interval: unknown): string {
     throw new Error("Invalid interval format. Expected string.");
   }
 
-  // Parse PostgreSQL INTERVAL format (e.g., "45 minutes", "1 hour 30 minutes 15 seconds")
-  const intervalRegex = /(?:(\d+)\s+hour(?:s)?)?\s*(?:(\d+)\s+minute(?:s)?)?\s*(?:(\d+)\s+second(?:s)?)?/;
-  const match = interval.match(intervalRegex);
-
-  if (!match) {
-    // If it's already in ISO-8601 format, return as-is
-    if (interval.match(/^PT/)) {
-      return interval;
-    }
-    throw new Error(`Unable to parse interval format: ${interval}`);
+  // If it's already in ISO-8601 format, return as-is
+  if (interval.match(/^PT/)) {
+    return interval;
   }
 
-  const hours = parseInt(match[1] || "0", 10);
-  const minutes = parseInt(match[2] || "0", 10);
-  const seconds = parseInt(match[3] || "0", 10);
+  // Parse PostgreSQL INTERVAL format - supports multiple formats:
+  // "45 minutes", "1 hour 30 minutes", "01:30:00", "1:30:00", etc.
+
+  // Try HH:MM:SS format first (e.g., "01:30:00")
+  const timeMatch = interval.match(/^(\d+):(\d+):(\d+)$/);
+  if (timeMatch) {
+    const hours = parseInt(timeMatch[1], 10);
+    const minutes = parseInt(timeMatch[2], 10);
+    const seconds = parseInt(timeMatch[3], 10);
+
+    const parts: string[] = [];
+    if (hours > 0) parts.push(`${hours}H`);
+    if (minutes > 0) parts.push(`${minutes}M`);
+    if (seconds > 0) parts.push(`${seconds}S`);
+
+    return parts.length > 0 ? `PT${parts.join("")}` : "PT0S";
+  }
+
+  // Try word format (e.g., "1 hour 30 minutes")
+  let hours = 0;
+  let minutes = 0;
+  let seconds = 0;
+
+  const hourMatch = interval.match(/(\d+)\s+hour(?:s)?/);
+  if (hourMatch) hours = parseInt(hourMatch[1], 10);
+
+  const minuteMatch = interval.match(/(\d+)\s+(?:min(?:ute)?(?:s)?|mins?)/);
+  if (minuteMatch) minutes = parseInt(minuteMatch[1], 10);
+
+  const secondMatch = interval.match(/(\d+)\s+(?:sec(?:ond)?(?:s)?|secs?)/);
+  if (secondMatch) seconds = parseInt(secondMatch[1], 10);
 
   // Build ISO-8601 duration string
   const parts: string[] = [];
-  if (hours > 0) {
-    parts.push(`${hours}H`);
-  }
-  if (minutes > 0) {
-    parts.push(`${minutes}M`);
-  }
-  if (seconds > 0) {
-    parts.push(`${seconds}S`);
+  if (hours > 0) parts.push(`${hours}H`);
+  if (minutes > 0) parts.push(`${minutes}M`);
+  if (seconds > 0) parts.push(`${seconds}S`);
+
+  if (parts.length === 0) {
+    console.warn(`Unable to parse interval format: "${interval}", returning PT0S`);
+    return "PT0S";
   }
 
-  return parts.length > 0 ? `PT${parts.join("")}` : "PT0S";
+  return `PT${parts.join("")}`;
 }
 
 /**
