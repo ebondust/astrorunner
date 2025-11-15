@@ -45,7 +45,7 @@ export function ActivityCard({
   });
 
   return (
-    <Card className="transition-shadow hover:shadow-md overflow-hidden">
+    <Card className="transition-shadow hover:shadow-md overflow-hidden py-0 gap-0">
       <CardContent className="p-0">
         {/* Badge, Time, and Action Buttons Row */}
         <div className="flex items-center justify-between gap-2 bg-muted/30 px-4 py-2">
