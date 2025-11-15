@@ -45,7 +45,7 @@ export function ActivityCard({ activity, distanceUnit, onEdit, onDelete }: Activ
         {/* Badge, Time, and Action Buttons Row */}
         <div className="flex items-center justify-between gap-2 bg-muted/30 px-4 py-2">
           <div className="flex items-center gap-2">
-            <Badge className={ACTIVITY_TYPE_COLORS[activity.activityType]} variant="default">
+            <Badge className={`${ACTIVITY_TYPE_COLORS[activity.activityType]} rounded-md`} variant="default">
               {activity.activityType}
             </Badge>
             <span className="text-sm text-muted-foreground">{timeString}</span>
