@@ -45,13 +45,13 @@ export function ActivityCard({
   });
 
   return (
-    <Card className="transition-shadow hover:shadow-md">
-      <CardContent className="p-1.5">
+    <Card className="transition-shadow hover:shadow-md overflow-hidden">
+      <CardContent className="p-0">
         <div className="flex items-start justify-between gap-4">
           {/* Activity Info */}
-          <div className="flex-1 space-y-2">
+          <div className="flex-1 space-y-0">
             {/* Badge and Time */}
-            <div className="flex items-center gap-2 bg-muted/30 px-3 py-2 rounded-md">
+            <div className="flex items-center gap-2 bg-muted/30 px-4 py-2">
               <Badge
                 className={ACTIVITY_TYPE_COLORS[activity.activityType]}
                 variant="default"
@@ -64,7 +64,7 @@ export function ActivityCard({
             </div>
 
             {/* Duration and Distance */}
-            <div className="flex flex-wrap gap-4 text-sm px-3 py-1">
+            <div className="flex flex-wrap gap-4 text-sm px-4 py-2">
               {/* Duration */}
               <div className="flex items-center gap-1.5">
                 <Clock className="h-4 w-4 text-muted-foreground" />
@@ -86,7 +86,7 @@ export function ActivityCard({
           </div>
 
           {/* Action Buttons */}
-          <div className="flex gap-2">
+          <div className="flex gap-2 pr-2 pt-2">
             <Button
               variant="ghost"
               size="icon"
