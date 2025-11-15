@@ -22,12 +22,7 @@ const ACTIVITY_TYPE_COLORS = {
 /**
  * Activity card component displaying individual activity entry
  */
-export function ActivityCard({
-  activity,
-  distanceUnit,
-  onEdit,
-  onDelete,
-}: ActivityCardProps) {
+export function ActivityCard({ activity, distanceUnit, onEdit, onDelete }: ActivityCardProps) {
   const handleEdit = () => {
     onEdit(activity);
   };
@@ -50,26 +45,15 @@ export function ActivityCard({
         {/* Badge, Time, and Action Buttons Row */}
         <div className="flex items-center justify-between gap-2 bg-muted/30 px-4 py-2">
           <div className="flex items-center gap-2">
-            <Badge
-              className={ACTIVITY_TYPE_COLORS[activity.activityType]}
-              variant="default"
-            >
+            <Badge className={ACTIVITY_TYPE_COLORS[activity.activityType]} variant="default">
               {activity.activityType}
             </Badge>
-            <span className="text-sm text-muted-foreground">
-              {timeString}
-            </span>
+            <span className="text-sm text-muted-foreground">{timeString}</span>
           </div>
 
           {/* Action Buttons */}
           <div className="flex gap-1">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleEdit}
-              aria-label="Edit activity"
-              className="h-8 w-8"
-            >
+            <Button variant="ghost" size="icon" onClick={handleEdit} aria-label="Edit activity" className="h-8 w-8">
               <Edit className="h-4 w-4" />
             </Button>
             <Button
@@ -85,22 +69,18 @@ export function ActivityCard({
         </div>
 
         {/* Duration and Distance Row */}
-        <div className="flex flex-wrap items-center gap-4 text-sm px-4 py-2.5">
+        <div className="flex flex-wrap items-center gap-4 text-sm px-4 py-3">
           {/* Duration */}
           <div className="flex items-center gap-1.5">
             <Clock className="h-4 w-4 text-muted-foreground" />
-            <span className="font-medium">
-              {formatDuration(activity.duration)}
-            </span>
+            <span className="font-medium">{formatDuration(activity.duration)}</span>
           </div>
 
           {/* Distance */}
           <div className="flex items-center gap-1.5">
             <MapPin className="h-4 w-4 text-muted-foreground" />
             <span className="font-medium">
-              {activity.distanceMeters
-                ? formatDistance(activity.distanceMeters, distanceUnit)
-                : "—"}
+              {activity.distanceMeters ? formatDistance(activity.distanceMeters, distanceUnit) : "—"}
             </span>
           </div>
         </div>
