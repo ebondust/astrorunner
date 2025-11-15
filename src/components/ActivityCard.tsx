@@ -85,7 +85,7 @@ export function ActivityCard({
         </div>
 
         {/* Duration and Distance Row */}
-        <div className="flex flex-wrap gap-4 text-sm px-4 py-2">
+        <div className="flex flex-wrap items-center gap-4 text-sm px-4 py-2.5">
           {/* Duration */}
           <div className="flex items-center gap-1.5">
             <Clock className="h-4 w-4 text-muted-foreground" />
