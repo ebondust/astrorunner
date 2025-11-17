@@ -66,12 +66,12 @@ export function ActivityList({
     <div className="container mx-auto px-4 py-6">
       <div className="space-y-6">
         {groupedActivities.map((group) => (
-          <div key={group.date.toISOString()} className="space-y-3">
+          <div key={group.date.toISOString()} className="space-y-1">
             {/* Date Header */}
             <DateHeader date={group.date} isToday={group.isToday} isSticky />
 
             {/* Activity Cards */}
-            <div className="space-y-3">
+            <div className="space-y-2">
               {group.activities.map((activity) => (
                 <ActivityCard
                   key={activity.activityId}
