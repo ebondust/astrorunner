@@ -27,10 +27,12 @@ The OpenRouter Service is a server-side service that generates short, contextual
 
 **Design Principles:**
 - Server-side only (never expose API key to client)
-- Cost-conscious (caching, token limits)
+- Cost-conscious (caching, token limits, free tier model)
 - Fail gracefully (fallback messages on error)
 - Type-safe (strict TypeScript)
 - Testable (dependency injection)
+- Feature-flagged (can be easily disabled)
+- User-controlled (click to regenerate)
 
 ---
 
@@ -51,13 +53,15 @@ class OpenRouterService {
   private readonly defaultModel: string;
   private readonly timeout: number;
   private readonly maxRetries: number;
+  private readonly cacheTTL: number;
 
   constructor(config: OpenRouterConfig) {
     this.apiKey = config.apiKey;
     this.baseUrl = config.baseUrl ?? 'https://openrouter.ai/api/v1';
-    this.defaultModel = config.model ?? 'openai/gpt-4o-mini';
+    this.defaultModel = config.model ?? 'meta-llama/llama-3.1-8b-instruct:free';
     this.timeout = config.timeout ?? 30000; // 30 seconds
     this.maxRetries = config.maxRetries ?? 3;
+    this.cacheTTL = config.cacheTTL ?? 15 * 60 * 1000; // 15 minutes
 
     // Validation
     if (!this.apiKey || this.apiKey.trim().length === 0) {
@@ -85,7 +89,7 @@ interface OpenRouterConfig {
 
   /**
    * Default model to use for generation
-   * @default 'openai/gpt-4o-mini'
+   * @default 'meta-llama/llama-3.1-8b-instruct:free'
    */
   model?: string;
 
@@ -100,6 +104,12 @@ interface OpenRouterConfig {
    * @default 3
    */
   maxRetries?: number;
+
+  /**
+   * Cache time-to-live in milliseconds
+   * @default 900000 (15 minutes)
+   */
+  cacheTTL?: number;
 }
 ```
 
@@ -111,8 +121,18 @@ import { OpenRouterService } from './openrouter.service';
 
 export const openRouterService = new OpenRouterService({
   apiKey: import.meta.env.OPENROUTER_API_KEY,
-  model: import.meta.env.OPENROUTER_MODEL,
+  model: import.meta.env.OPENROUTER_MODEL, // Optional override
+  cacheTTL: import.meta.env.OPENROUTER_CACHE_TTL
+    ? parseInt(import.meta.env.OPENROUTER_CACHE_TTL)
+    : undefined, // Falls back to 15 minutes
 });
+
+/**
+ * Check if AI motivation feature is enabled
+ */
+export const isAIMotivationEnabled = (): boolean => {
+  return import.meta.env.ENABLE_AI_MOTIVATION !== 'false';
+};
 ```
 
 ---
@@ -283,12 +303,10 @@ private readonly baseUrl: string;
 private readonly defaultModel: string;
 private readonly timeout: number;
 private readonly maxRetries: number;
+private readonly cacheTTL: number;
 
 /** In-memory cache for motivation messages */
 private cache: Map<string, CachedMotivation> = new Map();
-
-/** Cache TTL in milliseconds (1 hour) */
-private readonly cacheTTL: number = 60 * 60 * 1000;
 ```
 
 ### 4.2 Private Method: `makeRequest`
@@ -1905,14 +1923,20 @@ OPENROUTER_MODEL=openai/gpt-4o-mini
 
 ```typescript
 import { Card } from '@/components/ui/card';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, RefreshCw } from 'lucide-react';
 import type { MotivationalMessage } from '@/lib/services';
 
 interface MotivationBannerProps {
   motivation: MotivationalMessage | null;
+  onRegenerate?: () => void;
+  isRegenerating?: boolean;
 }
 
-export function MotivationBanner({ motivation }: MotivationBannerProps) {
+export function MotivationBanner({
+  motivation,
+  onRegenerate,
+  isRegenerating = false
+}: MotivationBannerProps) {
   if (!motivation) return null;
 
   // Color scheme based on tone
@@ -1923,18 +1947,34 @@ export function MotivationBanner({ motivation }: MotivationBannerProps) {
   };
 
   return (
-    <Card className={`p-4 mb-4 border-2 ${toneColors[motivation.tone]}`}>
+    <Card
+      className={`p-4 mb-4 border-2 transition-all ${toneColors[motivation.tone]} ${
+        onRegenerate ? 'cursor-pointer hover:shadow-md hover:scale-[1.01]' : ''
+      }`}
+      onClick={onRegenerate}
+      role={onRegenerate ? 'button' : undefined}
+      tabIndex={onRegenerate ? 0 : undefined}
+      onKeyDown={(e) => {
+        if (onRegenerate && (e.key === 'Enter' || e.key === ' ')) {
+          e.preventDefault();
+          onRegenerate();
+        }
+      }}
+      aria-label={onRegenerate ? 'Click to generate new motivation' : undefined}
+    >
       <div className="flex items-start gap-3">
-        <Sparkles className="w-5 h-5 mt-0.5 flex-shrink-0" />
+        {isRegenerating ? (
+          <RefreshCw className="w-5 h-5 mt-0.5 flex-shrink-0 animate-spin" />
+        ) : (
+          <Sparkles className="w-5 h-5 mt-0.5 flex-shrink-0" />
+        )}
         <div className="flex-1">
           <p className="text-sm font-medium leading-relaxed">
             {motivation.message}
           </p>
-          {motivation.cached && (
-            <p className="text-xs opacity-70 mt-1">
-              AI-powered motivation
-            </p>
-          )}
+          <p className="text-xs opacity-70 mt-1">
+            {isRegenerating ? 'Generating...' : 'AI-powered motivation • Click to refresh'}
+          </p>
         </div>
       </div>
     </Card>
@@ -1964,7 +2004,7 @@ export function MotivationBanner({ motivation }: MotivationBannerProps) {
 import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.astro';
 import { TopBar } from '@/components/TopBar';
 import { ActivitiesPageContainer } from '@/components/ActivitiesPageContainer';
-import { openRouterService, getFallbackMotivation } from '@/lib/services';
+import { openRouterService, getFallbackMotivation, isAIMotivationEnabled } from '@/lib/services';
 import { aggregateActivityStats } from '@/lib/utils/activity-stats';
 import type { MotivationalMessage } from '@/lib/services';
 
@@ -1979,32 +2019,35 @@ const now = new Date();
 const currentMonth = now.getMonth() + 1;
 const currentYear = now.getFullYear();
 
-// Generate motivation only for current month
+// Generate motivation only for current month and if feature is enabled
 let motivation: MotivationalMessage | null = null;
+const aiMotivationEnabled = isAIMotivationEnabled();
 
-try {
-  // Aggregate activity stats
-  const stats = await aggregateActivityStats(
-    supabase,
-    DEFAULT_USER_ID,
-    now,
-    DEFAULT_DISTANCE_UNIT
-  );
-
-  // Generate AI motivation
+if (aiMotivationEnabled) {
   try {
-    motivation = await openRouterService.generateMotivationalMessage(
+    // Aggregate activity stats
+    const stats = await aggregateActivityStats(
+      supabase,
       DEFAULT_USER_ID,
-      stats
+      now,
+      DEFAULT_DISTANCE_UNIT
     );
+
+    // Generate AI motivation
+    try {
+      motivation = await openRouterService.generateMotivationalMessage(
+        DEFAULT_USER_ID,
+        stats
+      );
+    } catch (error) {
+      console.error('Failed to generate AI motivation:', error);
+      // Use fallback - generic motivational text in English
+      motivation = getFallbackMotivation(stats);
+    }
   } catch (error) {
-    console.error('Failed to generate AI motivation:', error);
-    // Use fallback
-    motivation = getFallbackMotivation(stats);
+    console.error('Failed to aggregate stats:', error);
+    // No motivation if stats unavailable
   }
-} catch (error) {
-  console.error('Failed to aggregate stats:', error);
-  // No motivation if stats unavailable
 }
 ---
 
@@ -2020,6 +2063,7 @@ try {
     currentMonth={currentMonth}
     currentYear={currentYear}
     initialMotivation={motivation}
+    aiMotivationEnabled={aiMotivationEnabled}
   />
 </AuthenticatedLayout>
 ```
@@ -2036,6 +2080,7 @@ interface ActivitiesPageContainerProps {
   currentMonth: number;
   currentYear: number;
   initialMotivation: MotivationalMessage | null;
+  aiMotivationEnabled: boolean;
 }
 
 export function ActivitiesPageContainer({
@@ -2044,15 +2089,52 @@ export function ActivitiesPageContainer({
   currentMonth,
   currentYear,
   initialMotivation,
+  aiMotivationEnabled,
 }: ActivitiesPageContainerProps) {
   const [motivation, setMotivation] = useState<MotivationalMessage | null>(
     initialMotivation
   );
+  const [isRegeneratingMotivation, setIsRegeneratingMotivation] = useState(false);
 
   // ... existing state and hooks
 
+  // Handler to regenerate motivation
+  const handleRegenerateMotivation = async () => {
+    if (!aiMotivationEnabled || isRegeneratingMotivation) return;
+
+    setIsRegeneratingMotivation(true);
+
+    try {
+      // Call API endpoint to regenerate motivation
+      const response = await fetch('/api/motivation/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId,
+          distanceUnit,
+          bypassCache: true, // Force regeneration
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to regenerate motivation');
+      }
+
+      const newMotivation = await response.json();
+      setMotivation(newMotivation);
+    } catch (error) {
+      console.error('Failed to regenerate motivation:', error);
+      // Keep existing motivation on error
+    } finally {
+      setIsRegeneratingMotivation(false);
+    }
+  };
+
   // Show motivation only for current month
   const showMotivation =
+    aiMotivationEnabled &&
     selectedMonth.getMonth() + 1 === currentMonth &&
     selectedMonth.getFullYear() === currentYear;
 
@@ -2062,7 +2144,11 @@ export function ActivitiesPageContainer({
 
       {/* Show motivation banner below month navigation */}
       {showMotivation && motivation && (
-        <MotivationBanner motivation={motivation} />
+        <MotivationBanner
+          motivation={motivation}
+          onRegenerate={handleRegenerateMotivation}
+          isRegenerating={isRegeneratingMotivation}
+        />
       )}
 
       <div className="mb-4">
@@ -2077,11 +2163,86 @@ export function ActivitiesPageContainer({
 }
 ```
 
+6.3. Create API endpoint for regenerating motivation:
+
+**File to Create:** `src/pages/api/motivation/generate.ts`
+
+```typescript
+import type { APIRoute } from 'astro';
+import { openRouterService, getFallbackMotivation, isAIMotivationEnabled } from '@/lib/services';
+import { aggregateActivityStats } from '@/lib/utils/activity-stats';
+import type { MotivationalMessage } from '@/lib/services';
+
+export const POST: APIRoute = async ({ request, locals }) => {
+  // Check if feature is enabled
+  if (!isAIMotivationEnabled()) {
+    return new Response(
+      JSON.stringify({ error: 'AI motivation feature is disabled' }),
+      { status: 403 }
+    );
+  }
+
+  try {
+    const body = await request.json();
+    const { userId, distanceUnit = 'km', bypassCache = false } = body;
+
+    if (!userId) {
+      return new Response(
+        JSON.stringify({ error: 'userId is required' }),
+        { status: 400 }
+      );
+    }
+
+    // Get supabase client
+    const supabase = locals.supabase;
+
+    // Aggregate activity stats for current month
+    const now = new Date();
+    const stats = await aggregateActivityStats(
+      supabase,
+      userId,
+      now,
+      distanceUnit
+    );
+
+    // Generate motivation
+    let motivation: MotivationalMessage;
+    try {
+      motivation = await openRouterService.generateMotivationalMessage(
+        userId,
+        stats,
+        { bypassCache }
+      );
+    } catch (error) {
+      console.error('Failed to generate AI motivation:', error);
+      // Use fallback - generic motivational text in English
+      motivation = getFallbackMotivation(stats);
+    }
+
+    return new Response(JSON.stringify(motivation), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+  } catch (error) {
+    console.error('Error generating motivation:', error);
+    return new Response(
+      JSON.stringify({ error: 'Failed to generate motivation' }),
+      { status: 500 }
+    );
+  }
+};
+```
+
 **Testing:**
 - Test on activities page
 - Verify motivation shows only for current month
 - Test fallback on error
 - Verify caching behavior
+- Test click-to-regenerate functionality
+- Verify feature flag disables feature when set to 'false'
+- Test "AI-powered motivation" text is always visible
 
 ---
 
@@ -2103,14 +2264,23 @@ export function ActivitiesPageContainer({
 
 | Scenario | Expected Result |
 |----------|----------------|
-| User with 0 activities | Shows encouraging "get started" message |
+| User with 0 activities | Shows encouraging "get started" message (fallback) |
 | User with 5 activities | Shows encouraging message with progress |
 | User with 20+ activities | Shows celebratory message |
 | Viewing past month | No motivation shown |
 | Viewing future month | No motivation shown |
-| API key missing | Falls back to static message |
-| API timeout | Falls back to cached or static message |
-| Network error | Falls back to cached or static message |
+| Viewing current month | AI motivation shown below month navigation |
+| API key missing | Falls back to generic English motivational message |
+| API timeout | Falls back to cached or generic message |
+| Network error | Falls back to cached or generic message |
+| Feature flag set to 'false' | No motivation shown at all |
+| Feature flag set to 'true' | Motivation works normally |
+| Click on motivation banner | Shows loading spinner, regenerates new message |
+| Click while regenerating | Prevents duplicate requests |
+| Cache within 15 minutes | Returns cached message instantly |
+| Cache after 15 minutes | Fetches new message from API |
+| "AI-powered motivation" text | Always visible below message |
+| "Click to refresh" hint | Visible in subtitle text |
 
 7.4. **Performance Tests**:
 - Measure page load time with/without API call
@@ -2118,20 +2288,31 @@ export function ActivitiesPageContainer({
 - Check cache invalidation on new activity
 
 **Testing Checklist:**
-- [ ] Service instantiates correctly
+- [ ] Service instantiates correctly with all config options
+- [ ] Cache TTL is configurable via environment variable
+- [ ] Feature flag properly enables/disables feature
+- [ ] Free tier model (llama-3.1-8b) works correctly
 - [ ] API authentication works
 - [ ] Stats aggregation is accurate
 - [ ] Prompt construction is correct
 - [ ] Response parsing validates schema
-- [ ] Caching works as expected
-- [ ] Error handling falls back gracefully
+- [ ] Caching works with 15-minute TTL
+- [ ] Error handling falls back to English generic messages
 - [ ] UI displays motivation correctly
+- [ ] "AI-powered motivation" text always visible
+- [ ] Click-to-regenerate functionality works
+- [ ] Loading spinner shows during regeneration
+- [ ] Regeneration bypasses cache
+- [ ] Prevents duplicate requests while regenerating
 - [ ] Motivation only shows for current month
-- [ ] Tone colors display correctly
+- [ ] Tone colors display correctly (blue/green/orange)
+- [ ] Hover effect and cursor pointer work
+- [ ] Keyboard accessibility (Enter/Space to regenerate)
 - [ ] Mobile responsive design works
 - [ ] No console errors
 - [ ] TypeScript compiles without errors
-- [ ] API costs are reasonable (check token usage)
+- [ ] API endpoint /api/motivation/generate works
+- [ ] API costs are $0 with free tier
 
 ---
 
@@ -2144,7 +2325,9 @@ export function ActivitiesPageContainer({
 ```bash
 # Production .env
 OPENROUTER_API_KEY=sk-or-v1-your-production-key
-OPENROUTER_MODEL=openai/gpt-4o-mini
+OPENROUTER_MODEL=meta-llama/llama-3.1-8b-instruct:free  # Free tier
+OPENROUTER_CACHE_TTL=900000  # 15 minutes (adjust as needed)
+ENABLE_AI_MOTIVATION=true
 ```
 
 8.2. **Monitoring Setup**:
@@ -2195,26 +2378,31 @@ export function logAPIUsage(
 OPENROUTER_API_KEY=sk-or-v1-...
 
 # Optional (with defaults)
-OPENROUTER_MODEL=openai/gpt-4o-mini
+OPENROUTER_MODEL=meta-llama/llama-3.1-8b-instruct:free  # Default: free tier model
 OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
-OPENROUTER_TIMEOUT=30000
-OPENROUTER_MAX_RETRIES=3
+OPENROUTER_TIMEOUT=30000              # 30 seconds
+OPENROUTER_MAX_RETRIES=3              # Number of retry attempts
+OPENROUTER_CACHE_TTL=900000           # 15 minutes (in milliseconds)
+
+# Feature flag
+ENABLE_AI_MOTIVATION=true             # Set to 'false' to disable the feature
 ```
 
 ### Recommended Models
 
 | Model | Cost (per 1M tokens) | Speed | Quality | Use Case |
 |-------|---------------------|-------|---------|----------|
-| `openai/gpt-4o-mini` | $0.15 / $0.60 | Fast | High | **Recommended default** |
-| `openai/gpt-3.5-turbo` | $0.50 / $1.50 | Very Fast | Good | Budget option |
+| `meta-llama/llama-3.1-8b-instruct:free` | **Free** | Medium | Good | **Default - Free tier** |
+| `openai/gpt-4o-mini` | $0.15 / $0.60 | Fast | High | Paid upgrade option |
+| `openai/gpt-3.5-turbo` | $0.50 / $1.50 | Very Fast | Good | Budget paid option |
 | `anthropic/claude-3-haiku` | $0.25 / $1.25 | Fast | High | Quality alternative |
-| `meta-llama/llama-3.1-8b-instruct:free` | Free | Medium | Good | Free tier testing |
 
-**Estimated Costs:**
+**Cost Information:**
+- **Free tier (default)**: $0 with rate limits (check OpenRouter for current limits)
 - Average request: ~200 input tokens + 50 output tokens = 250 tokens
-- With caching (1 hour TTL): ~24 requests per day per active user
-- 100 active users: ~2,400 requests/day = 600,000 tokens/day
-- Monthly cost (gpt-4o-mini): ~$5-10
+- With caching (15 minute TTL): ~96 requests per day per active user (max)
+- Actual requests with cache: ~4-8 requests per day per active user
+- 100 active users with paid model (gpt-4o-mini): ~$2-5/month
 
 ### Model Parameters
 
@@ -2332,32 +2520,54 @@ OPENROUTER_MAX_RETRIES=3
 This implementation plan provides a comprehensive guide for building the OpenRouter service integration. The service is designed to be:
 
 - **Secure**: API key protected, server-side only
-- **Reliable**: Comprehensive error handling and fallbacks
-- **Cost-effective**: Caching and token limits
-- **User-friendly**: Contextual, personalized messages
+- **Reliable**: Comprehensive error handling and generic English fallbacks
+- **Cost-effective**: Free tier model with 15-minute caching
+- **User-friendly**: Contextual messages with click-to-regenerate
+- **Configurable**: Easy cache TTL adjustment and feature flag
 - **Maintainable**: Clear structure, type-safe, well-documented
 
 The implementation follows all project conventions and integrates seamlessly with the existing Activities page architecture.
+
+**Key Features:**
+- ✅ Free tier model (meta-llama/llama-3.1-8b-instruct:free)
+- ✅ 15-minute cache TTL (configurable via env variable)
+- ✅ Feature flag to enable/disable (ENABLE_AI_MOTIVATION)
+- ✅ Generic English fallback messages on API failure
+- ✅ "AI-powered motivation" text always visible
+- ✅ Click-to-regenerate with loading spinner
+- ✅ Keyboard accessible (Enter/Space to regenerate)
+- ✅ Only shows for current month view
 
 **Key Files:**
 - `src/lib/services/openrouter.service.ts` - Core service
 - `src/lib/services/openrouter.types.ts` - Type definitions
 - `src/lib/services/openrouter.errors.ts` - Custom errors
-- `src/lib/services/openrouter.fallback.ts` - Fallback messages
+- `src/lib/services/openrouter.fallback.ts` - Fallback messages (English)
+- `src/lib/services/index.ts` - Service exports and feature flag
 - `src/lib/utils/activity-stats.ts` - Stats aggregation
-- `src/components/MotivationBanner.tsx` - UI component
-- `src/pages/activities.astro` - Page integration
+- `src/components/MotivationBanner.tsx` - UI component with click handler
+- `src/pages/activities.astro` - Page integration with feature flag
+- `src/pages/api/motivation/generate.ts` - Regeneration API endpoint
+
+**Configuration:**
+```bash
+OPENROUTER_API_KEY=sk-or-v1-...
+OPENROUTER_MODEL=meta-llama/llama-3.1-8b-instruct:free
+OPENROUTER_CACHE_TTL=900000  # 15 minutes (easily adjustable)
+ENABLE_AI_MOTIVATION=true    # Set to 'false' to disable
+```
 
 **Next Steps:**
-1. Obtain OpenRouter API key
-2. Follow Phase 1-8 implementation steps
-3. Test thoroughly
-4. Deploy to production
-5. Monitor costs and performance
+1. Obtain free OpenRouter API key from https://openrouter.ai
+2. Set environment variables in .env file
+3. Follow Phase 1-8 implementation steps
+4. Test all scenarios (especially click-to-regenerate and fallbacks)
+5. Deploy to production
+6. Monitor free tier rate limits
 
 ---
 
-**Document Version:** 1.0
+**Document Version:** 2.0
 **Last Updated:** 2025-11-17
 **Author:** AI Implementation Planner
 **Status:** Ready for Implementation
