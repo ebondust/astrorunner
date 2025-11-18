@@ -42,11 +42,11 @@ export function MotivationBanner({
         }}
         aria-label={onRegenerate ? 'Click to generate new motivation' : undefined}
       >
-        <div className="flex items-start gap-3">
+        <div className="flex items-center gap-3">
           {isRegenerating ? (
-            <RefreshCw className="w-5 h-5 mt-0.5 flex-shrink-0 animate-spin" />
+            <RefreshCw className="w-5 h-5 flex-shrink-0 animate-spin" />
           ) : (
-            <Sparkles className="w-5 h-5 mt-0.5 flex-shrink-0" />
+            <Sparkles className="w-5 h-5 flex-shrink-0" />
           )}
           <div className="flex-1">
             <p className="text-sm font-medium leading-relaxed">
@@ -61,14 +61,14 @@ export function MotivationBanner({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <button
-                    className="flex-shrink-0 mt-0.5"
+                    className="flex-shrink-0"
                     onClick={(e) => e.stopPropagation()}
                     aria-label="Error generating motivation"
                   >
                     <AlertTriangle className="w-5 h-5 text-orange-600" />
                   </button>
                 </TooltipTrigger>
-                <TooltipContent>
+                <TooltipContent side="bottom" className="z-50">
                   <p className="max-w-xs">{error}</p>
                 </TooltipContent>
               </Tooltip>
