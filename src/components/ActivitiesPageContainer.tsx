@@ -6,13 +6,20 @@ import { AddActivityButton } from "./AddActivityButton";
 import { ActivityList } from "./ActivityList";
 import { ActivityFormModal } from "./ActivityFormModal";
 import { DeleteConfirmationModal } from "./DeleteConfirmationModal";
+import { MotivationBanner } from "./MotivationBanner";
 import { useMonthNavigation } from "./hooks/useMonthNavigation";
 import { useActivities } from "./hooks/useActivities";
 import { getCurrentMonthStart } from "@/lib/utils/date";
+import type { MotivationalMessage } from "@/lib/services";
 
 interface ActivitiesPageContainerProps {
   user: AuthUserBasicDto;
   distanceUnit: DistanceUnit;
+  currentMonth: number;
+  currentYear: number;
+  initialMotivation: MotivationalMessage | null;
+  initialMotivationError: string | null;
+  aiMotivationEnabled: boolean;
 }
 
 /**
@@ -22,11 +29,16 @@ interface ActivitiesPageContainerProps {
 export function ActivitiesPageContainer({
   user,
   distanceUnit,
+  currentMonth,
+  currentYear,
+  initialMotivation,
+  initialMotivationError,
+  aiMotivationEnabled,
 }: ActivitiesPageContainerProps) {
   // Month navigation state
   const {
     selectedMonth,
-    currentMonth,
+    currentMonth: currentMonthDate,
     goToPreviousMonth,
     goToNextMonth,
     goToToday,
@@ -57,6 +69,13 @@ export function ActivitiesPageContainer({
   const [editingActivity, setEditingActivity] = useState<ActivityDto | undefined>();
   const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false);
   const [deletingActivity, setDeletingActivity] = useState<ActivityDto | undefined>();
+
+  // Motivation state
+  const [motivation, setMotivation] = useState<MotivationalMessage | null>(
+    initialMotivation
+  );
+  const [isRegeneratingMotivation, setIsRegeneratingMotivation] = useState(false);
+  const [motivationError, setMotivationError] = useState<string | null>(initialMotivationError);
 
   // Handler: Open month picker
   const handleOpenMonthPicker = useCallback(() => {
@@ -145,6 +164,61 @@ export function ActivitiesPageContainer({
     setDeletingActivity(undefined);
   }, []);
 
+  // Handler: Regenerate motivation
+  const handleRegenerateMotivation = useCallback(async () => {
+    if (!aiMotivationEnabled || isRegeneratingMotivation) return;
+
+    setIsRegeneratingMotivation(true);
+    setMotivationError(null); // Clear previous error
+
+    try {
+      // Call API endpoint to regenerate motivation
+      const response = await fetch('/api/motivation/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: user.userId,
+          distanceUnit,
+          bypassCache: true, // Force regeneration
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to regenerate motivation');
+      }
+
+      const responseData = await response.json();
+
+      // Response now includes both motivation and error
+      if (responseData.motivation) {
+        setMotivation(responseData.motivation);
+      }
+
+      // Set error if present (even if we got a fallback motivation)
+      if (responseData.error) {
+        setMotivationError(responseData.error);
+      } else {
+        setMotivationError(null); // Clear error on success
+      }
+    } catch (error) {
+      console.error('Failed to regenerate motivation:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to regenerate motivation';
+      setMotivationError(errorMessage);
+      // Keep existing motivation on error
+    } finally {
+      setIsRegeneratingMotivation(false);
+    }
+  }, [aiMotivationEnabled, isRegeneratingMotivation, user.userId, distanceUnit]);
+
+  // Check if we should show motivation (only for current month)
+  const showMotivation =
+    aiMotivationEnabled &&
+    selectedMonth.getMonth() + 1 === currentMonth &&
+    selectedMonth.getFullYear() === currentYear;
+
   return (
     <>
       {/* Month Navigation */}
@@ -157,6 +231,16 @@ export function ActivitiesPageContainer({
         isCurrentMonth={isCurrentMonth}
         onGoToToday={goToToday}
       />
+
+      {/* Motivation Banner - only shown for current month */}
+      {showMotivation && motivation && (
+        <MotivationBanner
+          motivation={motivation}
+          onRegenerate={handleRegenerateMotivation}
+          isRegenerating={isRegeneratingMotivation}
+          error={motivationError}
+        />
+      )}
 
       {/* Add Activity Button */}
       <AddActivityButton onClick={handleAddActivity} />
@@ -179,7 +263,7 @@ export function ActivitiesPageContainer({
         selectedMonth={selectedMonth}
         onConfirm={handleMonthPickerConfirm}
         onCancel={handleMonthPickerCancel}
-        maxDate={currentMonth}
+        maxDate={currentMonthDate}
       />
 
       {/* Activity Form Modal */}

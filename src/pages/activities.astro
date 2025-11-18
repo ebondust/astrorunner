@@ -4,6 +4,8 @@ import { TopBar } from "@/components/TopBar";
 import { ActivitiesPageContainer } from "@/components/ActivitiesPageContainer";
 import type { AuthUserBasicDto } from "@/types";
 import { DEFAULT_USER_ID } from "@/db/supabase.client";
+import { getOpenRouterService, getFallbackMotivation, isAIMotivationEnabled, aggregateActivityStats } from "@/lib/services";
+import type { MotivationalMessage } from "@/lib/services";
 
 // Disable prerendering for this page (SSR)
 export const prerender = false;
@@ -18,6 +20,69 @@ const user: AuthUserBasicDto = {
 // TODO: Fetch user's preferred distance unit from profile
 // For now, default to km
 const distanceUnit = "km";
+
+// Get current month info
+const now = new Date();
+const currentMonth = now.getMonth() + 1;
+const currentYear = now.getFullYear();
+
+// Generate motivation only for current month and if feature is enabled
+let motivation: MotivationalMessage | null = null;
+let initialMotivationError: string | null = null;
+const aiMotivationEnabled = isAIMotivationEnabled();
+
+console.log('[Activities Page] AI Motivation enabled:', aiMotivationEnabled);
+
+if (aiMotivationEnabled) {
+  try {
+    // Get Supabase client from Astro locals
+    const supabase = Astro.locals.supabase;
+
+    console.log('[Activities Page] Aggregating activity stats...');
+    // Aggregate activity stats
+    const stats = await aggregateActivityStats(
+      supabase,
+      DEFAULT_USER_ID,
+      now,
+      distanceUnit as 'km' | 'mi'
+    );
+    console.log('[Activities Page] Stats aggregated:', stats);
+
+    // Generate AI motivation
+    const service = getOpenRouterService();
+    console.log('[Activities Page] OpenRouter service initialized:', !!service);
+
+    if (service) {
+      try {
+        console.log('[Activities Page] Calling generateMotivationalMessage...');
+        motivation = await service.generateMotivationalMessage(
+          DEFAULT_USER_ID,
+          stats
+        );
+        console.log('[Activities Page] AI motivation generated successfully:', motivation);
+      } catch (error) {
+        console.error('[Activities Page] Failed to generate AI motivation:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Failed to generate motivation';
+        initialMotivationError = errorMessage;
+        // Use fallback - generic motivational text in English
+        motivation = getFallbackMotivation(stats);
+        console.log('[Activities Page] Using fallback motivation:', motivation);
+      }
+    } else {
+      // Service not initialized, use fallback
+      console.log('[Activities Page] Service not initialized, using fallback');
+      initialMotivationError = 'AI service not available';
+      motivation = getFallbackMotivation(stats);
+      console.log('[Activities Page] Fallback motivation:', motivation);
+    }
+  } catch (error) {
+    console.error('[Activities Page] Failed to aggregate stats:', error);
+    initialMotivationError = error instanceof Error ? error.message : 'Failed to load activity stats';
+    // No motivation if stats unavailable
+  }
+} else {
+  console.log('[Activities Page] AI motivation is disabled');
+}
 ---
 
 <AuthenticatedLayout title="Activities - Activity Logger" user={user}>
@@ -25,5 +90,14 @@ const distanceUnit = "km";
   <TopBar client:load user={user} />
 
   <!-- Main page container with all components -->
-  <ActivitiesPageContainer client:load user={user} distanceUnit={distanceUnit} />
+  <ActivitiesPageContainer
+    client:load
+    user={user}
+    distanceUnit={distanceUnit}
+    currentMonth={currentMonth}
+    currentYear={currentYear}
+    initialMotivation={motivation}
+    initialMotivationError={initialMotivationError}
+    aiMotivationEnabled={aiMotivationEnabled}
+  />
 </AuthenticatedLayout>
