@@ -4,6 +4,8 @@ import { TopBar } from "@/components/TopBar";
 import { ActivitiesPageContainer } from "@/components/ActivitiesPageContainer";
 import type { AuthUserBasicDto } from "@/types";
 import { DEFAULT_USER_ID } from "@/db/supabase.client";
+import { getOpenRouterService, getFallbackMotivation, isAIMotivationEnabled, aggregateActivityStats } from "@/lib/services";
+import type { MotivationalMessage } from "@/lib/services";
 
 // Disable prerendering for this page (SSR)
 export const prerender = false;
@@ -18,6 +20,51 @@ const user: AuthUserBasicDto = {
 // TODO: Fetch user's preferred distance unit from profile
 // For now, default to km
 const distanceUnit = "km";
+
+// Get current month info
+const now = new Date();
+const currentMonth = now.getMonth() + 1;
+const currentYear = now.getFullYear();
+
+// Generate motivation only for current month and if feature is enabled
+let motivation: MotivationalMessage | null = null;
+const aiMotivationEnabled = isAIMotivationEnabled();
+
+if (aiMotivationEnabled) {
+  try {
+    // Get Supabase client from Astro locals
+    const supabase = Astro.locals.supabase;
+
+    // Aggregate activity stats
+    const stats = await aggregateActivityStats(
+      supabase,
+      DEFAULT_USER_ID,
+      now,
+      distanceUnit as 'km' | 'mi'
+    );
+
+    // Generate AI motivation
+    const service = getOpenRouterService();
+    if (service) {
+      try {
+        motivation = await service.generateMotivationalMessage(
+          DEFAULT_USER_ID,
+          stats
+        );
+      } catch (error) {
+        console.error('Failed to generate AI motivation:', error);
+        // Use fallback - generic motivational text in English
+        motivation = getFallbackMotivation(stats);
+      }
+    } else {
+      // Service not initialized, use fallback
+      motivation = getFallbackMotivation(stats);
+    }
+  } catch (error) {
+    console.error('Failed to aggregate stats:', error);
+    // No motivation if stats unavailable
+  }
+}
 ---
 
 <AuthenticatedLayout title="Activities - Activity Logger" user={user}>
@@ -25,5 +72,13 @@ const distanceUnit = "km";
   <TopBar client:load user={user} />
 
   <!-- Main page container with all components -->
-  <ActivitiesPageContainer client:load user={user} distanceUnit={distanceUnit} />
+  <ActivitiesPageContainer
+    client:load
+    user={user}
+    distanceUnit={distanceUnit}
+    currentMonth={currentMonth}
+    currentYear={currentYear}
+    initialMotivation={motivation}
+    aiMotivationEnabled={aiMotivationEnabled}
+  />
 </AuthenticatedLayout>

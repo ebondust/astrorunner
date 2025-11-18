@@ -6,13 +6,19 @@ import { AddActivityButton } from "./AddActivityButton";
 import { ActivityList } from "./ActivityList";
 import { ActivityFormModal } from "./ActivityFormModal";
 import { DeleteConfirmationModal } from "./DeleteConfirmationModal";
+import { MotivationBanner } from "./MotivationBanner";
 import { useMonthNavigation } from "./hooks/useMonthNavigation";
 import { useActivities } from "./hooks/useActivities";
 import { getCurrentMonthStart } from "@/lib/utils/date";
+import type { MotivationalMessage } from "@/lib/services";
 
 interface ActivitiesPageContainerProps {
   user: AuthUserBasicDto;
   distanceUnit: DistanceUnit;
+  currentMonth: number;
+  currentYear: number;
+  initialMotivation: MotivationalMessage | null;
+  aiMotivationEnabled: boolean;
 }
 
 /**
@@ -22,11 +28,15 @@ interface ActivitiesPageContainerProps {
 export function ActivitiesPageContainer({
   user,
   distanceUnit,
+  currentMonth,
+  currentYear,
+  initialMotivation,
+  aiMotivationEnabled,
 }: ActivitiesPageContainerProps) {
   // Month navigation state
   const {
     selectedMonth,
-    currentMonth,
+    currentMonth: currentMonthDate,
     goToPreviousMonth,
     goToNextMonth,
     goToToday,
@@ -57,6 +67,12 @@ export function ActivitiesPageContainer({
   const [editingActivity, setEditingActivity] = useState<ActivityDto | undefined>();
   const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false);
   const [deletingActivity, setDeletingActivity] = useState<ActivityDto | undefined>();
+
+  // Motivation state
+  const [motivation, setMotivation] = useState<MotivationalMessage | null>(
+    initialMotivation
+  );
+  const [isRegeneratingMotivation, setIsRegeneratingMotivation] = useState(false);
 
   // Handler: Open month picker
   const handleOpenMonthPicker = useCallback(() => {
@@ -145,6 +161,46 @@ export function ActivitiesPageContainer({
     setDeletingActivity(undefined);
   }, []);
 
+  // Handler: Regenerate motivation
+  const handleRegenerateMotivation = useCallback(async () => {
+    if (!aiMotivationEnabled || isRegeneratingMotivation) return;
+
+    setIsRegeneratingMotivation(true);
+
+    try {
+      // Call API endpoint to regenerate motivation
+      const response = await fetch('/api/motivation/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: user.userId,
+          distanceUnit,
+          bypassCache: true, // Force regeneration
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to regenerate motivation');
+      }
+
+      const newMotivation = await response.json();
+      setMotivation(newMotivation);
+    } catch (error) {
+      console.error('Failed to regenerate motivation:', error);
+      // Keep existing motivation on error
+    } finally {
+      setIsRegeneratingMotivation(false);
+    }
+  }, [aiMotivationEnabled, isRegeneratingMotivation, user.userId, distanceUnit]);
+
+  // Check if we should show motivation (only for current month)
+  const showMotivation =
+    aiMotivationEnabled &&
+    selectedMonth.getMonth() + 1 === currentMonth &&
+    selectedMonth.getFullYear() === currentYear;
+
   return (
     <>
       {/* Month Navigation */}
@@ -157,6 +213,15 @@ export function ActivitiesPageContainer({
         isCurrentMonth={isCurrentMonth}
         onGoToToday={goToToday}
       />
+
+      {/* Motivation Banner - only shown for current month */}
+      {showMotivation && motivation && (
+        <MotivationBanner
+          motivation={motivation}
+          onRegenerate={handleRegenerateMotivation}
+          isRegenerating={isRegeneratingMotivation}
+        />
+      )}
 
       {/* Add Activity Button */}
       <AddActivityButton onClick={handleAddActivity} />
@@ -179,7 +244,7 @@ export function ActivitiesPageContainer({
         selectedMonth={selectedMonth}
         onConfirm={handleMonthPickerConfirm}
         onCancel={handleMonthPickerCancel}
-        maxDate={currentMonth}
+        maxDate={currentMonthDate}
       />
 
       {/* Activity Form Modal */}
