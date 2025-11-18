@@ -65,8 +65,16 @@ export class OpenRouterService {
 
     // Build request
     const systemMessage = this.buildSystemMessage();
-    const userMessage = this.buildUserMessage(stats);
+    const userMessage = this.buildUserMessage(stats, options?.bypassCache);
     const responseFormat = this.buildResponseSchema();
+
+    // Use higher temperature when user explicitly wants a new message (bypass cache)
+    // This creates more variation in the responses
+    const temperature = options?.temperature ?? (options?.bypassCache ? 0.9 : 0.7);
+
+    if (options?.bypassCache) {
+      console.log('[OpenRouter] Using increased temperature (0.9) and prompt variation for regeneration');
+    }
 
     const requestBody: OpenRouterRequest = {
       model: options?.model ?? this.defaultModel,
@@ -76,11 +84,11 @@ export class OpenRouterService {
       ],
       response_format: responseFormat,
       max_tokens: options?.maxTokens ?? 100,
-      temperature: options?.temperature ?? 0.7,
+      temperature,
       top_p: 0.9,
     };
 
-    console.log('[OpenRouter] Request built successfully');
+    console.log('[OpenRouter] Request built successfully with temperature:', temperature);
 
     // Make request
     const response = await this.makeRequest('/chat/completions', requestBody);
@@ -232,12 +240,26 @@ Tone options:
 Keep messages concise, personal, and motivating.`;
   }
 
-  private buildUserMessage(stats: ActivityStats): string {
+  private buildUserMessage(stats: ActivityStats, addVariation: boolean = false): string {
     const monthName = new Date(stats.year, stats.month - 1).toLocaleString('en-US', {
       month: 'long'
     });
     const distance = this.formatDistance(stats.totalDistanceMeters, stats.distanceUnit);
     const duration = this.formatDuration(stats.totalDuration);
+
+    // Add prompt variations when user explicitly requests new message
+    // This encourages the LLM to take different perspectives
+    const perspectives = [
+      'Focus on the progress made so far.',
+      'Focus on the time remaining in the month.',
+      'Focus on the consistency of their effort.',
+      'Focus on specific achievements (distance or count).',
+      'Focus on maintaining momentum.',
+    ];
+
+    const perspectiveHint = addVariation
+      ? `\n${perspectives[Math.floor(Math.random() * perspectives.length)]}\n`
+      : '';
 
     return `Generate a motivational message for ${monthName} ${stats.year}:
 
@@ -246,7 +268,7 @@ Activity Summary:
 - Total distance: ${distance}
 - Total time: ${duration}
 - Month progress: Day ${stats.daysElapsed} of ${stats.totalDays} (${stats.daysRemaining} days remaining)
-
+${perspectiveHint}
 Respond with ONLY a JSON object in this exact format:
 {
   "message": "your motivational message here (1-2 sentences)",
