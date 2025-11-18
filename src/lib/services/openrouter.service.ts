@@ -390,13 +390,32 @@ Create an encouraging message that:
     console.log('[OpenRouter] Raw content from API:', choice.message.content);
 
     let parsed: any;
+    let content = choice.message.content;
+
     try {
-      parsed = JSON.parse(choice.message.content);
+      parsed = JSON.parse(content);
       console.log('[OpenRouter] Parsed JSON:', parsed);
     } catch (error) {
-      console.error('[OpenRouter] Failed to parse JSON:', error);
-      console.error('[OpenRouter] Content was:', choice.message.content);
-      throw new OpenRouterValidationError('Failed to parse JSON response from API');
+      console.error('[OpenRouter] Failed to parse JSON directly:', error);
+
+      // Try to extract JSON from markdown code blocks or surrounding text
+      const jsonMatch = content.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/) ||
+                       content.match(/(\{[\s\S]*?\})/);
+
+      if (jsonMatch && jsonMatch[1]) {
+        console.log('[OpenRouter] Attempting to extract JSON from text:', jsonMatch[1]);
+        try {
+          parsed = JSON.parse(jsonMatch[1]);
+          console.log('[OpenRouter] Successfully extracted JSON:', parsed);
+        } catch (extractError) {
+          console.error('[OpenRouter] Failed to extract JSON:', extractError);
+          console.error('[OpenRouter] Original content was:', content);
+          throw new OpenRouterValidationError('Failed to parse JSON response from API');
+        }
+      } else {
+        console.error('[OpenRouter] No JSON found in content:', content);
+        throw new OpenRouterValidationError('Failed to parse JSON response from API');
+      }
     }
 
     if (!parsed.message || typeof parsed.message !== 'string') {
