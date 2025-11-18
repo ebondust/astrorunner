@@ -23,36 +23,38 @@ export function MotivationBanner({
   };
 
   return (
-    <Card
-      className={`p-4 mb-4 border-2 transition-all ${toneColors[motivation.tone]} ${
-        onRegenerate ? 'cursor-pointer hover:shadow-md hover:scale-[1.01]' : ''
-      }`}
-      onClick={onRegenerate}
-      role={onRegenerate ? 'button' : undefined}
-      tabIndex={onRegenerate ? 0 : undefined}
-      onKeyDown={(e) => {
-        if (onRegenerate && (e.key === 'Enter' || e.key === ' ')) {
-          e.preventDefault();
-          onRegenerate();
-        }
-      }}
-      aria-label={onRegenerate ? 'Click to generate new motivation' : undefined}
-    >
-      <div className="flex items-start gap-3">
-        {isRegenerating ? (
-          <RefreshCw className="w-5 h-5 mt-0.5 flex-shrink-0 animate-spin" />
-        ) : (
-          <Sparkles className="w-5 h-5 mt-0.5 flex-shrink-0" />
-        )}
-        <div className="flex-1">
-          <p className="text-sm font-medium leading-relaxed">
-            {motivation.message}
-          </p>
-          <p className="text-xs opacity-70 mt-1">
-            {isRegenerating ? 'Generating...' : 'AI-powered motivation • Click to refresh'}
-          </p>
+    <div className="container mx-auto px-4 pt-4">
+      <Card
+        className={`p-4 border-2 transition-all ${toneColors[motivation.tone]} ${
+          onRegenerate ? 'cursor-pointer hover:shadow-md hover:scale-[1.01]' : ''
+        }`}
+        onClick={onRegenerate}
+        role={onRegenerate ? 'button' : undefined}
+        tabIndex={onRegenerate ? 0 : undefined}
+        onKeyDown={(e) => {
+          if (onRegenerate && (e.key === 'Enter' || e.key === ' ')) {
+            e.preventDefault();
+            onRegenerate();
+          }
+        }}
+        aria-label={onRegenerate ? 'Click to generate new motivation' : undefined}
+      >
+        <div className="flex items-start gap-3">
+          {isRegenerating ? (
+            <RefreshCw className="w-5 h-5 mt-0.5 flex-shrink-0 animate-spin" />
+          ) : (
+            <Sparkles className="w-5 h-5 mt-0.5 flex-shrink-0" />
+          )}
+          <div className="flex-1">
+            <p className="text-sm font-medium leading-relaxed">
+              {motivation.message}
+            </p>
+            <p className="text-xs opacity-70 mt-1">
+              {isRegenerating ? 'Generating...' : 'AI-powered motivation • Click to refresh'}
+            </p>
+          </div>
         </div>
-      </div>
-    </Card>
+      </Card>
+    </div>
   );
 }
