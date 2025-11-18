@@ -38,7 +38,7 @@ export function getOpenRouterService(): OpenRouterService | null {
       ? parseInt(import.meta.env.OPENROUTER_CACHE_TTL)
       : undefined;
 
-    console.log('[OpenRouter Init] Model:', model || 'default (meta-llama/llama-3.1-8b-instruct:free)');
+    console.log('[OpenRouter Init] Model:', model || 'default (meta-llama/llama-3.3-70b-instruct:free)');
     console.log('[OpenRouter Init] Cache TTL:', cacheTTL || '900000 (15 min)');
 
     openRouterServiceInstance = new OpenRouterService({

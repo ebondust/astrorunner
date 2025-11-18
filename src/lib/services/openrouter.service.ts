@@ -30,7 +30,7 @@ export class OpenRouterService {
 
     this.apiKey = config.apiKey;
     this.baseUrl = config.baseUrl ?? 'https://openrouter.ai/api/v1';
-    this.defaultModel = config.model ?? 'meta-llama/llama-3.1-8b-instruct:free';
+    this.defaultModel = config.model ?? 'meta-llama/llama-3.3-70b-instruct:free';
     this.timeout = config.timeout ?? 30000;
     this.maxRetries = config.maxRetries ?? 3;
     this.cacheTTL = config.cacheTTL ?? 15 * 60 * 1000; // 15 minutes default
@@ -153,7 +153,7 @@ export class OpenRouterService {
       const response = await fetch(`${this.baseUrl}${endpoint}`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${this.apiKey.substring(0, 10)}...`,
+          'Authorization': `Bearer ${this.apiKey}`,
           'Content-Type': 'application/json',
           'HTTP-Referer': 'https://astrorunner.app',
           'X-Title': 'AstroRunner Activity Logger',
