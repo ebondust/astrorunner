@@ -18,6 +18,7 @@ interface ActivitiesPageContainerProps {
   currentMonth: number;
   currentYear: number;
   initialMotivation: MotivationalMessage | null;
+  initialMotivationError: string | null;
   aiMotivationEnabled: boolean;
 }
 
@@ -31,6 +32,7 @@ export function ActivitiesPageContainer({
   currentMonth,
   currentYear,
   initialMotivation,
+  initialMotivationError,
   aiMotivationEnabled,
 }: ActivitiesPageContainerProps) {
   // Month navigation state
@@ -73,6 +75,7 @@ export function ActivitiesPageContainer({
     initialMotivation
   );
   const [isRegeneratingMotivation, setIsRegeneratingMotivation] = useState(false);
+  const [motivationError, setMotivationError] = useState<string | null>(initialMotivationError);
 
   // Handler: Open month picker
   const handleOpenMonthPicker = useCallback(() => {
@@ -166,6 +169,7 @@ export function ActivitiesPageContainer({
     if (!aiMotivationEnabled || isRegeneratingMotivation) return;
 
     setIsRegeneratingMotivation(true);
+    setMotivationError(null); // Clear previous error
 
     try {
       // Call API endpoint to regenerate motivation
@@ -182,13 +186,17 @@ export function ActivitiesPageContainer({
       });
 
       if (!response.ok) {
-        throw new Error('Failed to regenerate motivation');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to regenerate motivation');
       }
 
       const newMotivation = await response.json();
       setMotivation(newMotivation);
+      setMotivationError(null); // Clear error on success
     } catch (error) {
       console.error('Failed to regenerate motivation:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to regenerate motivation';
+      setMotivationError(errorMessage);
       // Keep existing motivation on error
     } finally {
       setIsRegeneratingMotivation(false);
@@ -220,6 +228,7 @@ export function ActivitiesPageContainer({
           motivation={motivation}
           onRegenerate={handleRegenerateMotivation}
           isRegenerating={isRegeneratingMotivation}
+          error={motivationError}
         />
       )}
 

@@ -1,17 +1,20 @@
 import { Card } from '@/components/ui/card';
-import { Sparkles, RefreshCw } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Sparkles, RefreshCw, AlertTriangle } from 'lucide-react';
 import type { MotivationalMessage } from '@/lib/services';
 
 interface MotivationBannerProps {
   motivation: MotivationalMessage | null;
   onRegenerate?: () => void;
   isRegenerating?: boolean;
+  error?: string | null;
 }
 
 export function MotivationBanner({
   motivation,
   onRegenerate,
-  isRegenerating = false
+  isRegenerating = false,
+  error = null
 }: MotivationBannerProps) {
   if (!motivation) return null;
 
@@ -23,7 +26,7 @@ export function MotivationBanner({
   };
 
   return (
-    <div className="container mx-auto px-4 pt-4">
+    <div className="container mx-auto px-4 pt-4 pb-4">
       <Card
         className={`p-4 border-2 transition-all ${toneColors[motivation.tone]} ${
           onRegenerate ? 'cursor-pointer hover:shadow-md hover:scale-[1.01]' : ''
@@ -53,6 +56,24 @@ export function MotivationBanner({
               {isRegenerating ? 'Generating...' : 'AI-powered motivation • Click to refresh'}
             </p>
           </div>
+          {error && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    className="flex-shrink-0 mt-0.5"
+                    onClick={(e) => e.stopPropagation()}
+                    aria-label="Error generating motivation"
+                  >
+                    <AlertTriangle className="w-5 h-5 text-orange-600" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p className="max-w-xs">{error}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
         </div>
       </Card>
     </div>

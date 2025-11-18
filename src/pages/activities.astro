@@ -28,6 +28,7 @@ const currentYear = now.getFullYear();
 
 // Generate motivation only for current month and if feature is enabled
 let motivation: MotivationalMessage | null = null;
+let initialMotivationError: string | null = null;
 const aiMotivationEnabled = isAIMotivationEnabled();
 
 if (aiMotivationEnabled) {
@@ -53,15 +54,19 @@ if (aiMotivationEnabled) {
         );
       } catch (error) {
         console.error('Failed to generate AI motivation:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Failed to generate motivation';
+        initialMotivationError = errorMessage;
         // Use fallback - generic motivational text in English
         motivation = getFallbackMotivation(stats);
       }
     } else {
       // Service not initialized, use fallback
+      initialMotivationError = 'AI service not available';
       motivation = getFallbackMotivation(stats);
     }
   } catch (error) {
     console.error('Failed to aggregate stats:', error);
+    initialMotivationError = error instanceof Error ? error.message : 'Failed to load activity stats';
     // No motivation if stats unavailable
   }
 }
@@ -79,6 +84,7 @@ if (aiMotivationEnabled) {
     currentMonth={currentMonth}
     currentYear={currentYear}
     initialMotivation={motivation}
+    initialMotivationError={initialMotivationError}
     aiMotivationEnabled={aiMotivationEnabled}
   />
 </AuthenticatedLayout>
