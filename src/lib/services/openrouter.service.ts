@@ -247,11 +247,16 @@ Activity Summary:
 - Total time: ${duration}
 - Month progress: Day ${stats.daysElapsed} of ${stats.totalDays} (${stats.daysRemaining} days remaining)
 
-Create an encouraging message that:
-1. Acknowledges their current progress
-2. Motivates them for the remaining days
-3. Is specific to their activity level
-4. Is 1-2 sentences maximum`;
+Respond with ONLY a JSON object in this exact format:
+{
+  "message": "your motivational message here (1-2 sentences)",
+  "tone": "encouraging" OR "celebratory" OR "challenging"
+}
+
+Choose tone based on activity level:
+- "encouraging" if steady progress (5-15 activities)
+- "celebratory" if impressive (15+ activities)
+- "challenging" if minimal (< 5 activities)`;
   }
 
   private buildResponseSchema(): ResponseFormat {
@@ -259,7 +264,7 @@ Create an encouraging message that:
       type: 'json_schema',
       json_schema: {
         name: 'motivation_message',
-        strict: true,
+        strict: false, // Changed to false for better compatibility with free models
         schema: {
           type: 'object',
           properties: {
@@ -423,14 +428,26 @@ Create an encouraging message that:
       throw new OpenRouterValidationError('Response missing required field: message');
     }
 
-    if (!parsed.tone || !['encouraging', 'celebratory', 'challenging'].includes(parsed.tone)) {
-      console.error('[OpenRouter] Missing or invalid tone field:', parsed.tone);
-      throw new OpenRouterValidationError('Response missing or invalid field: tone');
+    // Validate tone, but provide smart fallback if missing
+    let tone: 'encouraging' | 'celebratory' | 'challenging' = 'encouraging';
+
+    if (parsed.tone && ['encouraging', 'celebratory', 'challenging'].includes(parsed.tone)) {
+      tone = parsed.tone;
+    } else {
+      console.warn('[OpenRouter] Missing or invalid tone field, using default:', parsed.tone);
+      // Smart default based on message content
+      const msg = parsed.message.toLowerCase();
+      if (msg.includes('amazing') || msg.includes('incredible') || msg.includes('crushing')) {
+        tone = 'celebratory';
+      } else if (msg.includes('let\'s') || msg.includes('aim') || msg.includes('try')) {
+        tone = 'challenging';
+      }
+      console.log('[OpenRouter] Applied smart default tone:', tone);
     }
 
     const result = {
       message: parsed.message,
-      tone: parsed.tone,
+      tone,
       generatedAt: new Date().toISOString(),
       model: response.model || this.defaultModel,
       cached: false,
