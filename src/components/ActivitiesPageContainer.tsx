@@ -190,9 +190,19 @@ export function ActivitiesPageContainer({
         throw new Error(errorData.error || 'Failed to regenerate motivation');
       }
 
-      const newMotivation = await response.json();
-      setMotivation(newMotivation);
-      setMotivationError(null); // Clear error on success
+      const responseData = await response.json();
+
+      // Response now includes both motivation and error
+      if (responseData.motivation) {
+        setMotivation(responseData.motivation);
+      }
+
+      // Set error if present (even if we got a fallback motivation)
+      if (responseData.error) {
+        setMotivationError(responseData.error);
+      } else {
+        setMotivationError(null); // Clear error on success
+      }
     } catch (error) {
       console.error('Failed to regenerate motivation:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to regenerate motivation';

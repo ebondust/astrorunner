@@ -38,6 +38,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     // Generate motivation
     let motivation: MotivationalMessage;
+    let error: string | null = null;
     const service = getOpenRouterService();
 
     if (service) {
@@ -47,17 +48,20 @@ export const POST: APIRoute = async ({ request, locals }) => {
           stats,
           { bypassCache }
         );
-      } catch (error) {
-        console.error('Failed to generate AI motivation:', error);
+      } catch (apiError) {
+        console.error('Failed to generate AI motivation:', apiError);
+        const errorMessage = apiError instanceof Error ? apiError.message : 'Failed to generate motivation';
+        error = errorMessage;
         // Use fallback - generic motivational text in English
         motivation = getFallbackMotivation(stats);
       }
     } else {
       // Service not initialized, use fallback
+      error = 'AI service not available';
       motivation = getFallbackMotivation(stats);
     }
 
-    return new Response(JSON.stringify(motivation), {
+    return new Response(JSON.stringify({ motivation, error }), {
       status: 200,
       headers: {
         'Content-Type': 'application/json',
