@@ -44,13 +44,23 @@ export class OpenRouterService {
     stats: ActivityStats,
     options?: GenerationOptions
   ): Promise<MotivationalMessage> {
+    console.log('[OpenRouter] Generating motivational message for user:', userId);
+    console.log('[OpenRouter] Activity stats:', stats);
+    console.log('[OpenRouter] Options:', options);
+
     // Validate input
     this.validateStats(stats);
 
     // Check cache first
     if (!options?.bypassCache) {
       const cached = this.getFromCache(userId, stats);
-      if (cached) return cached;
+      if (cached) {
+        console.log('[OpenRouter] Returning cached motivation');
+        return cached;
+      }
+      console.log('[OpenRouter] No cache found, will call API');
+    } else {
+      console.log('[OpenRouter] Bypassing cache');
     }
 
     // Build request
@@ -70,11 +80,15 @@ export class OpenRouterService {
       top_p: 0.9,
     };
 
+    console.log('[OpenRouter] Request built successfully');
+
     // Make request
     const response = await this.makeRequest('/chat/completions', requestBody);
 
     // Parse response
     const message = this.parseResponse(response);
+
+    console.log('[OpenRouter] Final parsed message:', message);
 
     // Cache result
     this.saveToCache(userId, stats, message);
@@ -127,6 +141,11 @@ export class OpenRouterService {
     body: OpenRouterRequest,
     attempt: number = 1
   ): Promise<OpenRouterResponse> {
+    console.log('[OpenRouter] Making request (attempt', attempt, ')');
+    console.log('[OpenRouter] Endpoint:', `${this.baseUrl}${endpoint}`);
+    console.log('[OpenRouter] Model:', body.model);
+    console.log('[OpenRouter] Request body:', JSON.stringify(body, null, 2));
+
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), this.timeout);
 
@@ -134,7 +153,7 @@ export class OpenRouterService {
       const response = await fetch(`${this.baseUrl}${endpoint}`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${this.apiKey}`,
+          'Authorization': `Bearer ${this.apiKey.substring(0, 10)}...`,
           'Content-Type': 'application/json',
           'HTTP-Referer': 'https://astrorunner.app',
           'X-Title': 'AstroRunner Activity Logger',
@@ -145,14 +164,19 @@ export class OpenRouterService {
 
       clearTimeout(timeoutId);
 
+      console.log('[OpenRouter] Response status:', response.status, response.statusText);
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({
           error: { message: response.statusText }
         }));
 
+        console.log('[OpenRouter] Error response:', errorData);
+
         // Retry on rate limit or server error
         if ((response.status === 429 || response.status >= 500) && attempt < this.maxRetries) {
           const delay = Math.pow(2, attempt) * 1000;
+          console.log('[OpenRouter] Retrying after', delay, 'ms');
           await this.delay(delay);
           return this.makeRequest(endpoint, body, attempt + 1);
         }
@@ -163,7 +187,9 @@ export class OpenRouterService {
         );
       }
 
-      return await response.json();
+      const responseData = await response.json();
+      console.log('[OpenRouter] Success response:', JSON.stringify(responseData, null, 2));
+      return responseData;
     } catch (error) {
       clearTimeout(timeoutId);
 
@@ -353,33 +379,45 @@ Create an encouraging message that:
   }
 
   private parseResponse(response: OpenRouterResponse): MotivationalMessage {
+    console.log('[OpenRouter] Parsing response...');
     const choice = response.choices?.[0];
 
     if (!choice || !choice.message || !choice.message.content) {
+      console.error('[OpenRouter] Invalid response structure:', response);
       throw new OpenRouterValidationError('Invalid response structure from API');
     }
+
+    console.log('[OpenRouter] Raw content from API:', choice.message.content);
 
     let parsed: any;
     try {
       parsed = JSON.parse(choice.message.content);
+      console.log('[OpenRouter] Parsed JSON:', parsed);
     } catch (error) {
+      console.error('[OpenRouter] Failed to parse JSON:', error);
+      console.error('[OpenRouter] Content was:', choice.message.content);
       throw new OpenRouterValidationError('Failed to parse JSON response from API');
     }
 
     if (!parsed.message || typeof parsed.message !== 'string') {
+      console.error('[OpenRouter] Missing or invalid message field:', parsed);
       throw new OpenRouterValidationError('Response missing required field: message');
     }
 
     if (!parsed.tone || !['encouraging', 'celebratory', 'challenging'].includes(parsed.tone)) {
+      console.error('[OpenRouter] Missing or invalid tone field:', parsed.tone);
       throw new OpenRouterValidationError('Response missing or invalid field: tone');
     }
 
-    return {
+    const result = {
       message: parsed.message,
       tone: parsed.tone,
       generatedAt: new Date().toISOString(),
       model: response.model || this.defaultModel,
       cached: false,
     };
+
+    console.log('[OpenRouter] Successfully parsed message:', result);
+    return result;
   }
 }

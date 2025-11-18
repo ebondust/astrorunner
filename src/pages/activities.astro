@@ -31,11 +31,14 @@ let motivation: MotivationalMessage | null = null;
 let initialMotivationError: string | null = null;
 const aiMotivationEnabled = isAIMotivationEnabled();
 
+console.log('[Activities Page] AI Motivation enabled:', aiMotivationEnabled);
+
 if (aiMotivationEnabled) {
   try {
     // Get Supabase client from Astro locals
     const supabase = Astro.locals.supabase;
 
+    console.log('[Activities Page] Aggregating activity stats...');
     // Aggregate activity stats
     const stats = await aggregateActivityStats(
       supabase,
@@ -43,32 +46,42 @@ if (aiMotivationEnabled) {
       now,
       distanceUnit as 'km' | 'mi'
     );
+    console.log('[Activities Page] Stats aggregated:', stats);
 
     // Generate AI motivation
     const service = getOpenRouterService();
+    console.log('[Activities Page] OpenRouter service initialized:', !!service);
+
     if (service) {
       try {
+        console.log('[Activities Page] Calling generateMotivationalMessage...');
         motivation = await service.generateMotivationalMessage(
           DEFAULT_USER_ID,
           stats
         );
+        console.log('[Activities Page] AI motivation generated successfully:', motivation);
       } catch (error) {
-        console.error('Failed to generate AI motivation:', error);
+        console.error('[Activities Page] Failed to generate AI motivation:', error);
         const errorMessage = error instanceof Error ? error.message : 'Failed to generate motivation';
         initialMotivationError = errorMessage;
         // Use fallback - generic motivational text in English
         motivation = getFallbackMotivation(stats);
+        console.log('[Activities Page] Using fallback motivation:', motivation);
       }
     } else {
       // Service not initialized, use fallback
+      console.log('[Activities Page] Service not initialized, using fallback');
       initialMotivationError = 'AI service not available';
       motivation = getFallbackMotivation(stats);
+      console.log('[Activities Page] Fallback motivation:', motivation);
     }
   } catch (error) {
-    console.error('Failed to aggregate stats:', error);
+    console.error('[Activities Page] Failed to aggregate stats:', error);
     initialMotivationError = error instanceof Error ? error.message : 'Failed to load activity stats';
     // No motivation if stats unavailable
   }
+} else {
+  console.log('[Activities Page] AI motivation is disabled');
 }
 ---
 
