@@ -203,11 +203,32 @@ DELETE /api/activities/[id]   - Delete activity (future)
 
 ### 5. Database Patterns
 
+#### Supabase Client Usage
+
+- **ALWAYS use `context.locals.supabase`** in API routes and Astro pages
+- **NEVER import `supabaseClient` directly** in API routes - it's injected via middleware
+- **Use `SupabaseClient` type** from `src/db/supabase.client.ts`, NOT from `@supabase/supabase-js`
+- The Supabase client is injected via middleware in `src/middleware/index.ts`
+
+Example:
+```typescript
+// ✅ CORRECT - In API routes
+export async function GET(context: APIContext): Promise<Response> {
+  const supabase = context.locals.supabase;
+  // ... use supabase
+}
+
+// ❌ INCORRECT - Don't do this in API routes
+import { supabaseClient } from "../../db/supabase.client";
+```
+
 #### Row Level Security (RLS)
 
 - **ALL tables have RLS enabled**
 - Users can only access their own data: `user_id = auth.uid()`
 - Never bypass RLS in application code
+- RLS policies should be **granular**: separate policies for `select`, `insert`, `update`, `delete`
+- Each policy should be specific to a Supabase role (`anon`, `authenticated`)
 
 #### Naming Conventions
 
@@ -292,12 +313,26 @@ DELETE /api/activities/[id]   - Delete activity (future)
    ```bash
    supabase migration new migration_name
    ```
-2. Write migration in `supabase/migrations/`
-3. Always include:
+
+2. **Migration file naming convention**:
+   - Format: `YYYYMMDDHHmmss_short_description.sql`
+   - Use UTC time for timestamp
+   - Example: `20240906123045_create_profiles.sql`
+
+3. Write migration in `supabase/migrations/` following these guidelines:
+   - Include header comment with metadata (purpose, affected tables, special considerations)
+   - Write all SQL in lowercase
+   - Add thorough comments explaining each step
+   - Add copious comments for destructive commands (truncate, drop, column alterations)
+
+4. Always include:
    - Clear comments explaining changes
-   - RLS policies for new tables
+   - **MUST enable RLS** on all new tables (even for public access)
+   - RLS policies for new tables (granular: one per operation and role)
    - Indexes for performance
-4. Test migration locally before pushing
+   - Include comments explaining rationale for each RLS policy
+
+5. Test migration locally before pushing
 
 ---
 
@@ -334,10 +369,22 @@ DELETE /api/activities/[id]   - Delete activity (future)
 ### React Conventions
 
 - **Functional components only** (no class components)
+- **NEVER use "use client"** or other Next.js directives (this is Astro + React, not Next.js)
 - **Use hooks** from `src/components/hooks/`
+- **Extract logic into custom hooks** in `src/components/hooks/`
 - **Props interfaces**: Define inline or export if reused
 - **Event handlers**: Prefix with `handle` (e.g., `handleSubmit`)
 - **Client-side only code**: Use `client:*` directives in Astro pages
+
+#### React Performance Optimizations
+
+- Use `React.memo()` for expensive components that render often with the same props
+- Use `React.lazy()` and `Suspense` for code-splitting and performance optimization
+- Use `useCallback` for event handlers passed to child components to prevent unnecessary re-renders
+- Use `useMemo` for expensive calculations to avoid recomputation on every render
+- Use `useId()` for generating unique IDs for accessibility attributes
+- Use `useOptimistic` for optimistic UI updates in forms
+- Use `useTransition` for non-urgent state updates to keep the UI responsive
 
 ### Astro Conventions
 
@@ -345,6 +392,29 @@ DELETE /api/activities/[id]   - Delete activity (future)
 - **Frontmatter**: Logic goes in `---` section
 - **SEO**: Always include `<title>` and `<meta>` tags
 - **Layout**: Use layouts from `src/layouts/`
+- **View Transitions**: Leverage View Transitions API for smooth page transitions
+- **Content Collections**: Use with type safety for blog posts, documentation, etc.
+- **Server Endpoints**: Use for API routes in `src/pages/api/`
+- **Environment Variables**: Access via `import.meta.env`
+
+#### Astro API Routes
+
+- **Use UPPERCASE format** for endpoint handlers: `GET`, `POST`, `PUT`, `PATCH`, `DELETE`
+- **Always set `export const prerender = false`** for API routes (disables static prerendering)
+- **Use Zod for input validation** in all API routes
+- **Extract business logic into services** in `src/lib/services/`
+- **Implement middleware** for request/response modification (see `src/middleware/index.ts`)
+
+Example:
+```typescript
+// src/pages/api/example.ts
+export const prerender = false;
+
+export async function POST(context: APIContext): Promise<Response> {
+  const supabase = context.locals.supabase;
+  // ... validation, service calls, response
+}
+```
 
 ### Styling
 
@@ -352,12 +422,85 @@ DELETE /api/activities/[id]   - Delete activity (future)
 - **Component variants**: Use `class-variance-authority` (cva)
 - **Class merging**: Use `cn()` from `src/lib/utils.ts`
 - **Global styles**: Add to `src/styles/global.css` (sparingly)
+- **Use @layer directive** to organize styles into components, utilities, and base layers
+- **Arbitrary values**: Use square brackets for precise one-off designs (e.g., `w-[123px]`)
+- **Dark mode**: Use the `dark:` variant for dark mode styles
+- **Responsive design**: Use responsive variants (`sm:`, `md:`, `lg:`, etc.)
+- **State variants**: Use `hover:`, `focus-visible:`, `active:` for interactive elements
+
+#### Shadcn/ui Components
+
+Components are located in `src/components/ui/` and use the "new-york" style variant with "neutral" base color.
+
+To install additional Shadcn components:
+
+```bash
+npx shadcn@latest add [component-name]
+```
+
+Example:
+```bash
+npx shadcn@latest add accordion
+```
+
+**Important**: Use `npx shadcn@latest`, NOT `npx shadcn-ui@latest` (deprecated)
+
+Available components include: accordion, alert, alert-dialog, avatar, calendar, checkbox, command, context-menu, data-table, date-picker, dropdown-menu, form, hover-card, menubar, navigation-menu, popover, progress, radio-group, scroll-area, separator, sheet, skeleton, slider, switch, table, textarea, sonner (toast), toggle, tooltip, and more.
+
+### Accessibility (ARIA)
+
+- **Use ARIA landmarks** to identify page regions (main, navigation, search)
+- **Apply ARIA roles** to custom elements lacking semantic HTML equivalents
+- **Use `aria-expanded` and `aria-controls`** for expandable content (accordions, dropdowns)
+- **Implement `aria-live` regions** with appropriate politeness for dynamic updates
+- **Use `aria-hidden`** to hide decorative or duplicative content from screen readers
+- **Apply `aria-label` or `aria-labelledby`** for elements without visible text labels
+- **Use `aria-describedby`** to associate descriptive text with form inputs
+- **Implement `aria-current`** for indicating current item in navigation or process
+- **Avoid redundant ARIA** that duplicates native HTML element semantics
 
 ### Comments
 
 - **JSDoc for functions**: Include `@param`, `@returns`, `@throws`
 - **Inline comments**: Explain "why", not "what"
 - **TODO comments**: Use `// TODO: description` for future work
+
+### Error Handling and Clean Code Guidelines
+
+- **Prioritize error handling and edge cases** at the beginning of functions
+- **Handle errors and edge cases early** - Use guard clauses and early returns
+- **Place the happy path last** in the function for improved readability
+- **Avoid unnecessary else statements** - Use if-return pattern instead
+- **Use guard clauses** to handle preconditions and invalid states early
+- **Avoid deeply nested if statements** - Early returns improve readability
+- **Implement proper error logging** with correlation IDs for traceability
+- **Use custom error types** or error factories for consistent error handling
+- **Provide user-friendly error messages** - Never expose internal details to users
+
+Example of preferred error handling pattern:
+
+```typescript
+async function processActivity(data: unknown): Promise<ActivityDto> {
+  // 1. Guard clauses and validation first
+  if (!data) {
+    throw new Error("Activity data is required");
+  }
+
+  const validationResult = activitySchema.safeParse(data);
+  if (!validationResult.success) {
+    throw new ValidationError("Invalid activity data");
+  }
+
+  // 2. More guard clauses
+  if (!userId) {
+    throw new Error("User not authenticated");
+  }
+
+  // 3. Happy path last
+  const activity = await createActivity(supabase, userId, validationResult.data);
+  return mapEntityToDto(activity);
+}
+```
 
 ---
 
