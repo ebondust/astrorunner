@@ -1,0 +1,24 @@
+---
+import AuthLayout from "@/layouts/AuthLayout.astro";
+import { RegisterForm } from "@/components/RegisterForm";
+
+// Disable prerendering for this page (SSR)
+export const prerender = false;
+---
+
+<AuthLayout title="Create Account - Activity Logger">
+  <div class="space-y-6">
+    <!-- Logo/Brand -->
+    <div class="text-center">
+      <h1 class="text-3xl font-bold tracking-tight text-foreground">
+        Activity Logger
+      </h1>
+      <p class="mt-2 text-sm text-muted-foreground">
+        Start tracking your fitness journey today
+      </p>
+    </div>
+
+    <!-- Register Form -->
+    <RegisterForm client:load />
+  </div>
+</AuthLayout>

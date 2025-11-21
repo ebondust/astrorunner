@@ -1,0 +1,24 @@
+---
+import AuthLayout from "@/layouts/AuthLayout.astro";
+import { LoginForm } from "@/components/LoginForm";
+
+// Disable prerendering for this page (SSR)
+export const prerender = false;
+---
+
+<AuthLayout title="Sign In - Activity Logger">
+  <div class="space-y-6">
+    <!-- Logo/Brand -->
+    <div class="text-center">
+      <h1 class="text-3xl font-bold tracking-tight text-foreground">
+        Activity Logger
+      </h1>
+      <p class="mt-2 text-sm text-muted-foreground">
+        Track your runs and walks with ease
+      </p>
+    </div>
+
+    <!-- Login Form -->
+    <LoginForm client:load />
+  </div>
+</AuthLayout>
