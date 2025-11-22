@@ -2,20 +2,27 @@ import type { AstroCookies } from "astro";
 import { createClient } from "@supabase/supabase-js";
 import { createServerClient, type CookieOptionsWithName } from "@supabase/ssr";
 
-import type { Database } from "./database.types.ts";
+import type { Database } from "./database.types";
 
-const supabaseUrl = import.meta.env.SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.SUPABASE_KEY;
+// Lazy initialization to avoid accessing import.meta.env at module load time
+let _supabaseClient: ReturnType<typeof createClient<Database>> | null = null;
 
-// Use service role key in development to bypass RLS for testing
-// In production, this should use proper authentication
-const supabaseServiceRoleKey = import.meta.env.SUPABASE_SERVICE_ROLE_KEY;
+function getSupabaseClient() {
+  if (!_supabaseClient) {
+    const supabaseUrl = import.meta.env.SUPABASE_URL;
+    const supabaseAnonKey = import.meta.env.SUPABASE_KEY;
+    const supabaseServiceRoleKey = import.meta.env.SUPABASE_SERVICE_ROLE_KEY;
 
-// Use service role key if available (development), otherwise use anon key (production)
-const supabaseKey = supabaseServiceRoleKey || supabaseAnonKey;
+    // Use service role key if available (development), otherwise use anon key (production)
+    const supabaseKey = supabaseServiceRoleKey || supabaseAnonKey;
+
+    _supabaseClient = createClient<Database>(supabaseUrl, supabaseKey);
+  }
+  return _supabaseClient;
+}
 
 // Legacy global client - kept for backward compatibility with non-auth operations
-export const supabaseClient = createClient<Database>(supabaseUrl, supabaseKey);
+export const supabaseClient = getSupabaseClient();
 
 // Export SupabaseClient type for use throughout the application
 export type SupabaseClient = typeof supabaseClient;
