@@ -3,23 +3,42 @@ import AuthenticatedLayout from "@/layouts/AuthenticatedLayout.astro";
 import { TopBar } from "@/components/TopBar";
 import { ActivitiesPageContainer } from "@/components/ActivitiesPageContainer";
 import type { AuthUserBasicDto } from "@/types";
-import { DEFAULT_USER_ID } from "@/db/supabase.client";
 import { getOpenRouterService, getFallbackMotivation, isAIMotivationEnabled, aggregateActivityStats } from "@/lib/services";
 import type { MotivationalMessage } from "@/lib/services";
 
 // Disable prerendering for this page (SSR)
 export const prerender = false;
 
-// TODO: Replace with actual authentication when implemented
-// For now, use default test user
+// Get authenticated user from middleware
+const authenticatedUser = Astro.locals.user;
+
+// This should never happen due to middleware, but handle gracefully
+if (!authenticatedUser) {
+  return Astro.redirect('/auth/login');
+}
+
 const user: AuthUserBasicDto = {
-  userId: DEFAULT_USER_ID,
-  email: "test@example.com",
+  userId: authenticatedUser.id,
+  email: authenticatedUser.email,
 };
 
-// TODO: Fetch user's preferred distance unit from profile
-// For now, default to km
-const distanceUnit = "km";
+// Fetch user's preferred distance unit from profile
+let distanceUnit: 'km' | 'mi' = "km";
+try {
+  const supabase = Astro.locals.supabase;
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('distance_unit')
+    .eq('user_id', user.userId)
+    .single();
+
+  if (profile?.distance_unit) {
+    distanceUnit = profile.distance_unit as 'km' | 'mi';
+  }
+} catch (error) {
+  console.error('[Activities Page] Failed to fetch user profile:', error);
+  // Continue with default 'km'
+}
 
 // Get current month info
 const now = new Date();
@@ -42,9 +61,9 @@ if (aiMotivationEnabled) {
     // Aggregate activity stats
     const stats = await aggregateActivityStats(
       supabase,
-      DEFAULT_USER_ID,
+      user.userId,
       now,
-      distanceUnit as 'km' | 'mi'
+      distanceUnit
     );
     console.log('[Activities Page] Stats aggregated:', stats);
 
@@ -56,7 +75,7 @@ if (aiMotivationEnabled) {
       try {
         console.log('[Activities Page] Calling generateMotivationalMessage...');
         motivation = await service.generateMotivationalMessage(
-          DEFAULT_USER_ID,
+          user.userId,
           stats
         );
         console.log('[Activities Page] AI motivation generated successfully:', motivation);

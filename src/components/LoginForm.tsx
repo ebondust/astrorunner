@@ -41,9 +41,26 @@ export function LoginForm({ onSubmit }: LoginFormProps) {
       setIsSubmitting(true);
 
       try {
-        // Call the onSubmit callback if provided
+        // Call the onSubmit callback if provided, otherwise use default API call
         if (onSubmit) {
           await onSubmit(email, password);
+        } else {
+          // Default: Call login API endpoint
+          const response = await fetch("/api/auth/login", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ email, password }),
+          });
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || "Login failed");
+          }
+
+          // Redirect to activities page on success
+          window.location.href = "/activities";
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : "An error occurred");

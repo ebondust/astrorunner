@@ -169,3 +169,47 @@ export const createActivityCommandSchema = z.object({
  * Type for validated CreateActivityCommand
  */
 export type ValidatedCreateActivityCommand = z.infer<typeof createActivityCommandSchema>;
+
+/**
+ * Zod schema for login command validation
+ */
+export const loginCommandSchema = z.object({
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(1, "Password is required"),
+});
+
+/**
+ * Type for validated login command
+ */
+export type ValidatedLoginCommand = z.infer<typeof loginCommandSchema>;
+
+/**
+ * Zod schema for signup command validation
+ * Password must be at least 8 characters with uppercase, lowercase, and number
+ */
+export const signupCommandSchema = z.object({
+  email: z.string().email("Invalid email address"),
+  password: z
+    .string()
+    .min(8, "Password must be at least 8 characters")
+    .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+    .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+    .regex(/[0-9]/, "Password must contain at least one number"),
+});
+
+/**
+ * Type for validated signup command
+ */
+export type ValidatedSignupCommand = z.infer<typeof signupCommandSchema>;
+
+/**
+ * Zod schema for password reset command validation
+ */
+export const passwordResetCommandSchema = z.object({
+  email: z.string().email("Invalid email address"),
+});
+
+/**
+ * Type for validated password reset command
+ */
+export type ValidatedPasswordResetCommand = z.infer<typeof passwordResetCommandSchema>;
