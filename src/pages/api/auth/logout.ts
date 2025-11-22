@@ -1,7 +1,7 @@
 import type { APIRoute } from "astro";
 
-import { createSupabaseServerInstance } from "@/db/supabase.client.ts";
-import { internalServerError } from "@/lib/api/errors.ts";
+import { createSupabaseServerInstance } from "@/db/supabase.client";
+import { internalServerError } from "@/lib/api/errors";
 
 /**
  * Disable prerendering for this API route (enable SSR)
