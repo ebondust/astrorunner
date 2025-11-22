@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { AuthUserBasicDto } from "@/types";
 import {
   DropdownMenu,
@@ -20,20 +21,43 @@ interface UserMenuProps {
  * Displays user information and provides navigation to profile and logout
  */
 export function UserMenu({ user, onLogout }: UserMenuProps) {
-  const handleLogout = () => {
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  const handleLogout = async () => {
     if (onLogout) {
       onLogout();
     } else {
-      // Default logout behavior (placeholder)
-      console.log('Logout clicked');
-      // TODO: Implement actual logout when auth is ready
+      // Default logout behavior - call logout API
+      setIsLoggingOut(true);
+
+      try {
+        const response = await fetch("/api/auth/logout", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        // Logout endpoint returns 204 No Content on success
+        if (response.ok || response.status === 204) {
+          // Redirect to login page
+          window.location.href = "/auth/login";
+        } else {
+          console.error("Logout failed:", response.status);
+          // Still redirect to login page even if logout fails
+          window.location.href = "/auth/login";
+        }
+      } catch (error) {
+        console.error("Logout error:", error);
+        // Still redirect to login page even on error
+        window.location.href = "/auth/login";
+      }
     }
   };
 
   const handleProfileClick = () => {
-    // Navigate to profile page (placeholder)
-    console.log('Profile clicked');
-    // TODO: Implement profile navigation
+    // Navigate to profile page
+    window.location.href = "/profile";
   };
 
   return (
@@ -43,6 +67,7 @@ export function UserMenu({ user, onLogout }: UserMenuProps) {
           variant="ghost"
           className="flex items-center gap-2"
           aria-label="User menu"
+          disabled={isLoggingOut}
         >
           <User className="h-5 w-5" />
           <span className="hidden sm:inline">{user.email}</span>
@@ -61,9 +86,9 @@ export function UserMenu({ user, onLogout }: UserMenuProps) {
           Profile
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleLogout}>
+        <DropdownMenuItem onClick={handleLogout} disabled={isLoggingOut}>
           <LogOut className="mr-2 h-4 w-4" />
-          Logout
+          {isLoggingOut ? "Logging out..." : "Logout"}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
