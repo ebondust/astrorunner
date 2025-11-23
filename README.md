@@ -39,6 +39,14 @@ The application follows a **mobile-first** and **minimalist design** approach, e
   - Multiple language SDKs
   - Open-source solution with self-hosting options
 
+### Testing
+- **Vitest** - Fast, ESM-native test framework for unit and integration tests
+- **React Testing Library** - Component testing from user perspective
+- **@testing-library/user-event** - Realistic user interactions in tests
+- **@testing-library/jest-dom** - DOM matchers for assertions
+- **MSW (Mock Service Worker)** - API mocking for integration tests
+- **Playwright** - Multi-browser end-to-end testing with screenshots/videos
+
 ### CI/CD and Hosting
 - **GitHub Actions** - CI/CD pipeline automation
 - **DigitalOcean** - Application hosting via Docker containers

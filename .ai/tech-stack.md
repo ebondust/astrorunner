@@ -17,6 +17,22 @@
 
 ---
 
+## Testing
+
+### Unit and Integration Tests
+
+- **Vitest** is a fast, ESM-native test framework with TypeScript support for unit and integration tests.  
+- **React Testing Library** enables component testing from a user perspective.  
+- **@testing-library/user-event** provides realistic user interactions in tests.  
+- **@testing-library/jest-dom** offers DOM matchers for assertions.  
+- **MSW (Mock Service Worker)** enables API mocking for integration tests.  
+
+### End-to-End Tests
+
+- **Playwright** provides multi-browser E2E testing with screenshots and videos.  
+
+---
+
 ## CI/CD and Hosting
 
 - **GitHub Actions** for building CI/CD pipelines.  
