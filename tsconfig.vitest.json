@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "types": ["vitest/globals", "@testing-library/jest-dom"],
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "noEmit": true
+  },
+  "include": ["src", "vitest.setup.ts"]
+}

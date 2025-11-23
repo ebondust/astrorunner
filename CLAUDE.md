@@ -464,6 +464,7 @@ Available components include: accordion, alert, alert-dialog, avatar, calendar, 
 - **JSDoc for functions**: Include `@param`, `@returns`, `@throws`
 - **Inline comments**: Explain "why", not "what"
 - **TODO comments**: Use `// TODO: description` for future work
+- **Do NOT create new markdown files** to document each change or summarize your work unless specifically requested by the user
 
 ### Error Handling and Clean Code Guidelines
 
