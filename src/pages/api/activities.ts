@@ -1,8 +1,7 @@
 import type { APIContext } from "astro";
 import { randomUUID } from "node:crypto";
 
-import { DEFAULT_USER_ID } from "../../db/supabase.client.ts";
-import { badRequest, internalServerError, unprocessableEntity } from "../../lib/api/errors.ts";
+import { badRequest, internalServerError, unprocessableEntity, unauthorized } from "../../lib/api/errors.ts";
 import { mapEntityToDto } from "../../lib/mappers/activity.mapper.ts";
 import { createActivity } from "../../lib/services/activity.service.ts";
 import { createActivityCommandSchema } from "../../lib/validators.ts";
@@ -26,8 +25,13 @@ export async function GET(context: APIContext): Promise<Response> {
       return internalServerError(correlationId);
     }
 
-    // Use default user ID (authentication will be implemented later)
-    const userId = DEFAULT_USER_ID;
+    // Get authenticated user from middleware
+    const user = context.locals.user;
+    if (!user) {
+      return unauthorized("Authentication required");
+    }
+
+    const userId = user.id;
 
     // Parse query parameters from URL
     const url = new URL(context.request.url);
@@ -103,7 +107,6 @@ export async function GET(context: APIContext): Promise<Response> {
 /**
  * POST /api/activities
  * Creates a new activity entry
- * Note: Authentication is not yet implemented - using DEFAULT_USER_ID for now
  */
 export async function POST(context: APIContext): Promise<Response> {
   const correlationId = randomUUID();
@@ -116,8 +119,13 @@ export async function POST(context: APIContext): Promise<Response> {
       return internalServerError(correlationId);
     }
 
-    // Step 2: Use default user ID (authentication will be implemented later)
-    const userId = DEFAULT_USER_ID;
+    // Step 2: Get authenticated user from middleware
+    const user = context.locals.user;
+    if (!user) {
+      return unauthorized("Authentication required");
+    }
+
+    const userId = user.id;
 
     // Step 3: Validate Content-Type header
     const contentType = context.request.headers.get("content-type");

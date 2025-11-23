@@ -1,4 +1,13 @@
 ---
-// Redirect to login page
-return Astro.redirect('/auth/login');
+// Redirect based on authentication status
+// If authenticated, go to activities page
+// If not authenticated, go to login page
+
+const user = Astro.locals.user;
+
+if (user) {
+  return Astro.redirect('/activities');
+} else {
+  return Astro.redirect('/auth/login');
+}
 ---
