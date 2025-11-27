@@ -429,8 +429,7 @@ test.describe("Activity Management", () => {
     // Assert
     const activities = await activityPage.getActivityCards();
     for (const activity of activities) {
-      const type = await activity.locator("[data-testid='type']").textContent();
-      expect(type).toBe("Run");
+      await expect(activity.locator("[data-testid='type']")).toHaveText("Run");
     }
   });
 });
