@@ -12,7 +12,8 @@
       "Bash(npm update:*)",
       "Bash(npm view:*)",
       "Bash(npm test:*)",
-      "Bash(node -e:*)"
+      "Bash(node -e:*)",
+      "Bash(npx tsc:*)"
     ],
     "deny": [],
     "ask": []

@@ -213,15 +213,18 @@ This document tracks the progress of unit test implementation for the AstroRunne
 
 ### UI Components (`components/`)
 
-#### `ActivityFormModal`
-- [ ] Render - Empty form
-- [ ] Render - Edit mode with data
-- [ ] User input - Text fields
-- [ ] User input - Select fields
-- [ ] Form validation - Display errors
-- [ ] Form submission - Success
-- [ ] Form submission - Error
-- [ ] Modal open/close
+#### `ActivityFormModal` ✅ **COMPLETED**
+- [x] Render - Empty form
+- [x] Render - Edit mode with data
+- [x] User input - Text fields
+- [x] User input - Select fields
+- [x] Form validation - Display errors
+- [x] Form submission - Success
+- [x] Form submission - Error
+- [x] Modal open/close
+
+**Test File**: `src/components/ActivityFormModal.test.tsx`
+**Test Count**: 8 tests - All passing ✅
 
 #### `ActivityList`
 - [ ] Render - With activities
@@ -250,9 +253,9 @@ This document tracks the progress of unit test implementation for the AstroRunne
 
 ## Summary Statistics
 
-- **Total Tests Written**: 408 tests
-- **Tests Completed**: 408 tests (Priority 1 + Priority 2 complete)
-- **Tests Passing**: ✅ **408/408** (100% pass rate)
+- **Total Tests Written**: 416 tests
+- **Tests Completed**: 416 tests (Priority 1 + Priority 2 + Partial Priority 3)
+- **Tests Passing**: ✅ **416/416** (100% pass rate)
 - **Coverage Target**: 80%+
 
 ## Test Files Created
@@ -271,6 +274,9 @@ This document tracks the progress of unit test implementation for the AstroRunne
 9. `src/components/hooks/useActivityForm.test.ts` - 27 tests
 10. `src/components/hooks/useMonthNavigation.test.ts` - 30 tests
 11. `src/lib/api/activities.client.test.ts` - 37 tests
+
+### Priority 3 Tests
+12. `src/components/ActivityFormModal.test.tsx` - 8 tests
 
 ## Test Results ✅
 
@@ -291,7 +297,10 @@ This document tracks the progress of unit test implementation for the AstroRunne
 - ✅ **30 tests passing** in useMonthNavigation.test.ts
 - ✅ **37 tests passing** in activities.client.test.ts
 
-**Total: 408/408 tests passing (100%)**
+### Priority 3 Test results:
+- ✅ **8 tests passing** in ActivityFormModal.test.tsx
+
+**Total: 416/416 tests passing (100%)**
 
 ## Bugs Fixed
 
@@ -336,4 +345,4 @@ This document tracks the progress of unit test implementation for the AstroRunne
 ---
 
 **Last Updated**: 2025-11-27
-**Status**: ✅ **Priority 1 & 2 Complete** - All 408 Tests Passing (100%)
+**Status**: ✅ **Priority 1 & 2 Complete + Priority 3 Started** - All 416 Tests Passing (100%)
