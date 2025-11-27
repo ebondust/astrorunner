@@ -659,6 +659,10 @@ When implementing tests:
 4. **API Routes**: Test with mock requests, verify responses
 5. **Components**: Test rendering and user interactions
 
+**IMPORTANT - Testing Mappers**: Before writing mapper tests, always check the actual implementation to verify data formats:
+- `parseDuration()` returns PostgreSQL INTERVAL word format (e.g., "45 minutes", "1 hour 30 minutes"), NOT "HH:MM:SS"
+- Test assertions must match the actual output format, not assumed formats
+
 ---
 
 ## Common Tasks
