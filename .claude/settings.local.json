@@ -3,7 +3,17 @@
     "allow": [
       "Bash(mkdir:*)",
       "Bash(nul)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run test:*)",
+      "Bash(npx playwright:*)",
+      "Bash(node --loader tsx --no-warnings:*)",
+      "Bash(npx vitest:*)",
+      "Bash(npm update:*)",
+      "Bash(npm view:*)",
+      "Bash(npm test:*)",
+      "Bash(node -e:*)",
+      "Bash(npx tsc:*)"
     ],
     "deny": [],
     "ask": []

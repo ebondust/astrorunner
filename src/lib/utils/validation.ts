@@ -20,6 +20,12 @@ export function validateActivityDate(date: string): string | undefined {
     return "Invalid date";
   }
 
+  // Check if the date components match (to catch invalid dates like Feb 30)
+  const isoString = parsedDate.toISOString();
+  if (!date.startsWith(isoString.substring(0, 10))) {
+    return "Invalid date";
+  }
+
   return undefined;
 }
 
@@ -141,5 +147,5 @@ export function validateActivityForm(formState: ActivityFormState): ActivityForm
  * Check if form has any errors
  */
 export function hasFormErrors(errors: ActivityFormErrors): boolean {
-  return Object.keys(errors).length > 0;
+  return Object.values(errors).some(error => error !== undefined);
 }

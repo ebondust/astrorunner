@@ -464,6 +464,7 @@ Available components include: accordion, alert, alert-dialog, avatar, calendar, 
 - **JSDoc for functions**: Include `@param`, `@returns`, `@throws`
 - **Inline comments**: Explain "why", not "what"
 - **TODO comments**: Use `// TODO: description` for future work
+- **Do NOT create new markdown files** to document each change or summarize your work unless specifically requested by the user
 
 ### Error Handling and Clean Code Guidelines
 
@@ -657,6 +658,10 @@ When implementing tests:
 3. **Validators**: Test Zod schemas with valid/invalid inputs
 4. **API Routes**: Test with mock requests, verify responses
 5. **Components**: Test rendering and user interactions
+
+**IMPORTANT - Testing Mappers**: Before writing mapper tests, always check the actual implementation to verify data formats:
+- `parseDuration()` returns PostgreSQL INTERVAL word format (e.g., "45 minutes", "1 hour 30 minutes"), NOT "HH:MM:SS"
+- Test assertions must match the actual output format, not assumed formats
 
 ---
 
