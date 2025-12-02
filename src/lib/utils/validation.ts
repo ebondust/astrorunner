@@ -1,16 +1,16 @@
 import type { ActivityFormState, ActivityFormErrors } from "@/frontend-types";
 
 /**
- * Validate ISO-8601 date format (YYYY-MM-DDTHH:MM:SSZ)
- * Accepts various ISO-8601 formats including dates with timezone offset
+ * Validate ISO-8601 UTC date format (YYYY-MM-DDTHH:MM:SSZ)
+ * Requires UTC format with 'Z' suffix. Does not accept timezone offsets.
  */
 export function validateActivityDate(date: string): string | undefined {
   if (!date) {
     return "Date is required";
   }
 
-  // Check if it's a valid ISO-8601 datetime (with or without milliseconds, with Z or timezone offset)
-  const iso8601Regex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?(Z|[+-]\d{2}:\d{2})?$/;
+  // Check if it's a valid ISO-8601 UTC datetime (with or without milliseconds, must end with Z)
+  const iso8601Regex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?Z$/;
   if (!iso8601Regex.test(date)) {
     return "Date must be in ISO-8601 UTC format (YYYY-MM-DDTHH:MM:SSZ)";
   }
@@ -18,6 +18,14 @@ export function validateActivityDate(date: string): string | undefined {
   // Check if it's a valid date
   const parsedDate = new Date(date);
   if (isNaN(parsedDate.getTime())) {
+    return "Invalid date";
+  }
+
+  // Check if the date components match (to catch invalid dates like Feb 30)
+  // Extract date part (YYYY-MM-DD) from input and compare with parsed date
+  const inputDatePart = date.substring(0, 10);
+  const parsedDatePart = parsedDate.toISOString().substring(0, 10);
+  if (inputDatePart !== parsedDatePart) {
     return "Invalid date";
   }
 
