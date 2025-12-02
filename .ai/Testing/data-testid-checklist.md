@@ -1,31 +1,42 @@
 # data-testid Attributes Checklist
 
-**Status:** Not Started
+**Status:** In Progress - User Story 2 Complete
 **Required for:** E2E Testing Implementation
-**Estimated Time:** 2-3 hours
+**Last Updated:** 2025-12-01
 
 ---
 
 ## Components Requiring data-testid
 
 ### ActivitiesPageContainer.tsx
-- [ ] `activities-page-container` - Root container
-- [ ] `add-activity-button` - Add activity button
-- [ ] `error-banner` - Error message display
+- [x] `add-activity-button` - Add activity button (via AddActivityButton component)
+- [ ] `error-banner` - Error message display (not implemented yet)
+- **Note:** No root container in this component (renders fragment)
 
 ### ActivityList.tsx
-- [ ] `activity-list` - List container
-- [ ] `empty-state` - Empty state component
-- [ ] `skeleton-loader` - Loading skeleton
+- [x] `activity-list` - List container
+- [x] `empty-state` - Empty state component (via EmptyState component)
+- [x] `skeleton-loader` - Loading skeleton (via SkeletonLoader component)
 
 ### ActivityCard.tsx
-- [ ] `activity-card` - Card wrapper
-- [ ] `activity-type-badge` - Type badge
-- [ ] `activity-time` - Time display
-- [ ] `activity-duration` - Duration display
-- [ ] `activity-distance` - Distance display
-- [ ] `edit-activity-button` - Edit button
-- [ ] `delete-activity-button` - Delete button
+- [x] `activity-card` - Card wrapper
+- [x] `activity-type-badge` - Type badge
+- [x] `activity-time` - Time display
+- [x] `activity-duration` - Duration display
+- [x] `activity-distance` - Distance display
+- [x] `edit-activity-button` - Edit button
+- [x] `delete-activity-button` - Delete button
+
+### AddActivityButton.tsx
+- [x] `add-activity-button` - Add activity button
+
+### EmptyState.tsx
+- [x] `empty-state` - Empty state container
+- [x] `empty-state-message` - Message text
+- [x] `empty-state-cta` - Call-to-action button
+
+### SkeletonLoader.tsx
+- [x] `skeleton-loader` - Loading skeleton container
 
 ### DateHeader.tsx
 - [ ] `date-header` - Header container
@@ -39,18 +50,18 @@
 - [ ] `today-button` - Today button
 
 ### ActivityFormModal.tsx
-- [ ] `activity-form-modal` - Modal dialog
-- [ ] `activity-date-input` - Date/time input
-- [ ] `activity-type-select` - Type dropdown
-- [ ] `duration-input` - Duration input
-- [ ] `distance-input` - Distance input
-- [ ] `submit-activity-button` - Submit button
-- [ ] `cancel-button` - Cancel button
-- [ ] `form-error-message` - Form-level error
-- [ ] `date-error-message` - Date field error
-- [ ] `type-error-message` - Type field error
-- [ ] `duration-error-message` - Duration field error
-- [ ] `distance-error-message` - Distance field error
+- [x] `activity-form-modal` - Modal dialog
+- [x] `activity-date-input` - Date/time input
+- [x] `activity-type-select` - Type dropdown
+- [x] `duration-input` - Duration input
+- [x] `distance-input` - Distance input
+- [x] `submit-activity-button` - Submit button
+- [x] `cancel-button` - Cancel button
+- [x] `form-error-message` - Form-level error
+- [x] `date-error-message` - Date field error
+- [x] `type-error-message` - Type field error
+- [x] `duration-error-message` - Duration field error
+- [x] `distance-error-message` - Distance field error
 
 ### DeleteConfirmationModal.tsx
 - [ ] `delete-confirmation-modal` - Modal dialog
@@ -65,16 +76,13 @@
 - [ ] `confirm-month-button` - Confirm button
 - [ ] `cancel-month-button` - Cancel button
 
-### EmptyState.tsx
-- [ ] `empty-state-message` - Message text
-- [ ] `empty-state-cta` - Call-to-action button
-
 ---
 
 ## Quick Reference
 
 **Total Attributes:** 43
-**Files to Update:** 9
+**Completed for User Story 2:** 24/43
+**Files Updated:** 6/9 (ActivityCard, ActivityList, ActivityFormModal, AddActivityButton, EmptyState, SkeletonLoader)
 
 **Example Implementation:**
 ```tsx

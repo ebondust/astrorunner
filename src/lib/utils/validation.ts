@@ -2,14 +2,15 @@ import type { ActivityFormState, ActivityFormErrors } from "@/frontend-types";
 
 /**
  * Validate ISO-8601 date format (YYYY-MM-DDTHH:MM:SSZ)
+ * Accepts various ISO-8601 formats including dates with timezone offset
  */
 export function validateActivityDate(date: string): string | undefined {
   if (!date) {
     return "Date is required";
   }
 
-  // Check if it's a valid ISO-8601 UTC datetime
-  const iso8601Regex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?Z$/;
+  // Check if it's a valid ISO-8601 datetime (with or without milliseconds, with Z or timezone offset)
+  const iso8601Regex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?(Z|[+-]\d{2}:\d{2})?$/;
   if (!iso8601Regex.test(date)) {
     return "Date must be in ISO-8601 UTC format (YYYY-MM-DDTHH:MM:SSZ)";
   }
@@ -17,12 +18,6 @@ export function validateActivityDate(date: string): string | undefined {
   // Check if it's a valid date
   const parsedDate = new Date(date);
   if (isNaN(parsedDate.getTime())) {
-    return "Invalid date";
-  }
-
-  // Check if the date components match (to catch invalid dates like Feb 30)
-  const isoString = parsedDate.toISOString();
-  if (!date.startsWith(isoString.substring(0, 10))) {
     return "Invalid date";
   }
 

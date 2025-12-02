@@ -1,5 +1,9 @@
 import { defineConfig, devices } from "@playwright/test";
+import path from "path";
+import dotenv from "dotenv";
 
+// Load .env.test and override any existing environment variables
+dotenv.config({ path: path.resolve(process.cwd(), ".env.test"), override: true });
 /**
  * Playwright E2E Test Configuration
  * - Runs tests against Desktop Chrome (Chromium) only
@@ -36,14 +40,29 @@ export default defineConfig({
   },
 
   projects: [
+    // Setup project - runs before all tests
+    {
+      name: "setup",
+      testMatch: /global\.setup\.ts/,
+      teardown: "cleanup",
+    },
+
+    // Teardown project - runs after all tests
+    {
+      name: "cleanup",
+      testMatch: /global\.teardown\.ts/,
+    },
+
+    // Main test project - depends on setup
     {
       name: "chromium",
       use: { ...devices["Desktop Chrome"] },
+      dependencies: ["setup"],
     },
   ],
 
   webServer: {
-    command: "npm run dev",
+    command: "npm run dev:e2e",
     url: "http://localhost:3000",
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
