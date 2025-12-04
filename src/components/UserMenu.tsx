@@ -63,12 +63,7 @@ export function UserMenu({ user, onLogout }: UserMenuProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          className="flex items-center gap-2"
-          aria-label="User menu"
-          disabled={isLoggingOut}
-        >
+        <Button variant="ghost" className="flex items-center gap-2" aria-label="User menu" disabled={isLoggingOut}>
           <User className="h-5 w-5" />
           <span className="hidden sm:inline">{user.email}</span>
         </Button>

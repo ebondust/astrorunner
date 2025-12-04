@@ -89,11 +89,7 @@ export async function replaceActivity(
  * @param activityId - ID of the activity to delete
  * @throws Error if database operation fails or activity not found
  */
-export async function deleteActivity(
-  supabase: SupabaseClient,
-  userId: string,
-  activityId: string
-): Promise<void> {
+export async function deleteActivity(supabase: SupabaseClient, userId: string, activityId: string): Promise<void> {
   if (!userId || userId.trim().length === 0) {
     throw new Error("User ID is required");
   }
@@ -103,11 +99,7 @@ export async function deleteActivity(
   }
 
   // Delete from database (RLS ensures user can only delete their own activities)
-  const { error } = await supabase
-    .from("activities")
-    .delete()
-    .eq("activity_id", activityId)
-    .eq("user_id", userId);
+  const { error } = await supabase.from("activities").delete().eq("activity_id", activityId).eq("user_id", userId);
 
   if (error) {
     throw new Error(`Failed to delete activity: ${error.message}`);

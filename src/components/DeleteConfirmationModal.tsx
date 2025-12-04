@@ -21,12 +21,7 @@ interface DeleteConfirmationModalProps {
 /**
  * Confirmation modal for deleting activities
  */
-export function DeleteConfirmationModal({
-  open,
-  activity,
-  onConfirm,
-  onCancel,
-}: DeleteConfirmationModalProps) {
+export function DeleteConfirmationModal({ open, activity, onConfirm, onCancel }: DeleteConfirmationModalProps) {
   const handleConfirm = async () => {
     await onConfirm();
   };
@@ -46,8 +41,7 @@ export function DeleteConfirmationModal({
           <div className="rounded-lg bg-muted p-3 text-sm">
             <div className="font-medium">{activity.activityType}</div>
             <div className="text-muted-foreground">
-              {formatActivityDate(new Date(activity.activityDate))} •{" "}
-              {formatDuration(activity.duration)}
+              {formatActivityDate(new Date(activity.activityDate))} • {formatDuration(activity.duration)}
             </div>
           </div>
         )}

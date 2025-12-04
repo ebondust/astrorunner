@@ -539,7 +539,8 @@ describe("activity.service.ts", () => {
             activity_id: `activity-${testCase.type.toLowerCase()}`,
             user_id: userId,
             activity_date: "2025-11-26T10:00:00Z",
-            duration: testCase.duration === "PT45M" ? "45 minutes" : testCase.duration === "PT30M" ? "30 minutes" : "1 hour",
+            duration:
+              testCase.duration === "PT45M" ? "45 minutes" : testCase.duration === "PT30M" ? "30 minutes" : "1 hour",
             activity_type: testCase.type,
             distance: null,
           };

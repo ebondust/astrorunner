@@ -3,7 +3,12 @@ import AuthenticatedLayout from "@/layouts/AuthenticatedLayout.astro";
 import { TopBar } from "@/components/TopBar";
 import { ActivitiesPageContainer } from "@/components/ActivitiesPageContainer";
 import type { AuthUserBasicDto } from "@/types";
-import { getOpenRouterService, getFallbackMotivation, isAIMotivationEnabled, aggregateActivityStats } from "@/lib/services";
+import {
+  getOpenRouterService,
+  getFallbackMotivation,
+  isAIMotivationEnabled,
+  aggregateActivityStats,
+} from "@/lib/services";
 import type { MotivationalMessage } from "@/lib/services";
 
 // Disable prerendering for this page (SSR)
@@ -14,7 +19,7 @@ const authenticatedUser = Astro.locals.user;
 
 // This should never happen due to middleware, but handle gracefully
 if (!authenticatedUser) {
-  return Astro.redirect('/auth/login');
+  return Astro.redirect("/auth/login");
 }
 
 const user: AuthUserBasicDto = {
@@ -23,20 +28,16 @@ const user: AuthUserBasicDto = {
 };
 
 // Fetch user's preferred distance unit from profile
-let distanceUnit: 'km' | 'mi' = "km";
+let distanceUnit: "km" | "mi" = "km";
 try {
   const supabase = Astro.locals.supabase;
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('distance_unit')
-    .eq('user_id', user.userId)
-    .single();
+  const { data: profile } = await supabase.from("profiles").select("distance_unit").eq("user_id", user.userId).single();
 
   if (profile?.distance_unit) {
-    distanceUnit = profile.distance_unit as 'km' | 'mi';
+    distanceUnit = profile.distance_unit as "km" | "mi";
   }
 } catch (error) {
-  console.error('[Activities Page] Failed to fetch user profile:', error);
+  console.error("[Activities Page] Failed to fetch user profile:", error);
   // Continue with default 'km'
 }
 
@@ -50,57 +51,49 @@ let motivation: MotivationalMessage | null = null;
 let initialMotivationError: string | null = null;
 const aiMotivationEnabled = isAIMotivationEnabled();
 
-console.log('[Activities Page] AI Motivation enabled:', aiMotivationEnabled);
+console.log("[Activities Page] AI Motivation enabled:", aiMotivationEnabled);
 
 if (aiMotivationEnabled) {
   try {
     // Get Supabase client from Astro locals
     const supabase = Astro.locals.supabase;
 
-    console.log('[Activities Page] Aggregating activity stats...');
+    console.log("[Activities Page] Aggregating activity stats...");
     // Aggregate activity stats
-    const stats = await aggregateActivityStats(
-      supabase,
-      user.userId,
-      now,
-      distanceUnit
-    );
-    console.log('[Activities Page] Stats aggregated:', stats);
+    const stats = await aggregateActivityStats(supabase, user.userId, now, distanceUnit);
+    console.log("[Activities Page] Stats aggregated:", stats);
 
     // Generate AI motivation
     const service = getOpenRouterService();
-    console.log('[Activities Page] OpenRouter service initialized:', !!service);
+    console.log("[Activities Page] OpenRouter service initialized:", !!service);
 
     if (service) {
       try {
-        console.log('[Activities Page] Calling generateMotivationalMessage...');
-        motivation = await service.generateMotivationalMessage(
-          user.userId,
-          stats
-        );
-        console.log('[Activities Page] AI motivation generated successfully:', motivation);
+        console.log("[Activities Page] Calling generateMotivationalMessage...");
+        motivation = await service.generateMotivationalMessage(user.userId, stats);
+        console.log("[Activities Page] AI motivation generated successfully:", motivation);
       } catch (error) {
-        console.error('[Activities Page] Failed to generate AI motivation:', error);
-        const errorMessage = error instanceof Error ? error.message : 'Failed to generate motivation';
+        console.error("[Activities Page] Failed to generate AI motivation:", error);
+        const errorMessage = error instanceof Error ? error.message : "Failed to generate motivation";
         initialMotivationError = errorMessage;
         // Use fallback - generic motivational text in English
         motivation = getFallbackMotivation(stats);
-        console.log('[Activities Page] Using fallback motivation:', motivation);
+        console.log("[Activities Page] Using fallback motivation:", motivation);
       }
     } else {
       // Service not initialized, use fallback
-      console.log('[Activities Page] Service not initialized, using fallback');
-      initialMotivationError = 'AI service not available';
+      console.log("[Activities Page] Service not initialized, using fallback");
+      initialMotivationError = "AI service not available";
       motivation = getFallbackMotivation(stats);
-      console.log('[Activities Page] Fallback motivation:', motivation);
+      console.log("[Activities Page] Fallback motivation:", motivation);
     }
   } catch (error) {
-    console.error('[Activities Page] Failed to aggregate stats:', error);
-    initialMotivationError = error instanceof Error ? error.message : 'Failed to load activity stats';
+    console.error("[Activities Page] Failed to aggregate stats:", error);
+    initialMotivationError = error instanceof Error ? error.message : "Failed to load activity stats";
     // No motivation if stats unavailable
   }
 } else {
-  console.log('[Activities Page] AI motivation is disabled');
+  console.log("[Activities Page] AI motivation is disabled");
 }
 ---
 

@@ -27,21 +27,13 @@ export function MonthNavigation({
 }: MonthNavigationProps) {
   const handlePreviousMonth = () => {
     if (!canGoPrevious) return;
-    const prevMonth = new Date(
-      selectedMonth.getFullYear(),
-      selectedMonth.getMonth() - 1,
-      1
-    );
+    const prevMonth = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() - 1, 1);
     onMonthChange(prevMonth);
   };
 
   const handleNextMonth = () => {
     if (!canGoNext) return;
-    const nextMonth = new Date(
-      selectedMonth.getFullYear(),
-      selectedMonth.getMonth() + 1,
-      1
-    );
+    const nextMonth = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() + 1, 1);
     onMonthChange(nextMonth);
   };
 
@@ -100,13 +92,7 @@ export function MonthNavigation({
 
         {/* Today Button (mobile) */}
         <div className="mt-2 flex justify-center sm:hidden">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onGoToToday}
-            disabled={isCurrentMonth}
-            className="w-full"
-          >
+          <Button variant="outline" size="sm" onClick={onGoToToday} disabled={isCurrentMonth} className="w-full">
             Go to Today
           </Button>
         </div>

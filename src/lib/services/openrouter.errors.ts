@@ -4,7 +4,7 @@
 export class OpenRouterError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = 'OpenRouterError';
+    this.name = "OpenRouterError";
   }
 }
 
@@ -17,7 +17,7 @@ export class OpenRouterAPIError extends OpenRouterError {
     public readonly statusCode: number
   ) {
     super(message);
-    this.name = 'OpenRouterAPIError';
+    this.name = "OpenRouterAPIError";
   }
 }
 
@@ -27,7 +27,7 @@ export class OpenRouterAPIError extends OpenRouterError {
 export class OpenRouterValidationError extends OpenRouterError {
   constructor(message: string) {
     super(message);
-    this.name = 'OpenRouterValidationError';
+    this.name = "OpenRouterValidationError";
   }
 }
 
@@ -35,8 +35,8 @@ export class OpenRouterValidationError extends OpenRouterError {
  * Timeout errors
  */
 export class OpenRouterTimeoutError extends OpenRouterError {
-  constructor(message: string = 'Request timeout') {
+  constructor(message = "Request timeout") {
     super(message);
-    this.name = 'OpenRouterTimeoutError';
+    this.name = "OpenRouterTimeoutError";
   }
 }

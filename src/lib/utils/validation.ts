@@ -103,7 +103,7 @@ export function validateDistance(distance: number | undefined): string | undefin
     return undefined;
   }
 
-  if (typeof distance !== 'number' || isNaN(distance)) {
+  if (typeof distance !== "number" || isNaN(distance)) {
     return "Distance must be a valid number";
   }
 
@@ -112,7 +112,7 @@ export function validateDistance(distance: number | undefined): string | undefin
   }
 
   // Check decimal places (max 2 for km)
-  const decimalPlaces = (distance.toString().split('.')[1] || '').length;
+  const decimalPlaces = (distance.toString().split(".")[1] || "").length;
   if (decimalPlaces > 2) {
     return "Distance must have at most 2 decimal places";
   }
@@ -150,5 +150,5 @@ export function validateActivityForm(formState: ActivityFormState): ActivityForm
  * Check if form has any errors
  */
 export function hasFormErrors(errors: ActivityFormErrors): boolean {
-  return Object.values(errors).some(error => error !== undefined);
+  return Object.values(errors).some((error) => error !== undefined);
 }

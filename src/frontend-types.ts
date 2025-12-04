@@ -6,7 +6,7 @@ import type { ActivityDto, ActivityType } from "./types";
 
 // Activity list state
 export interface ActivityListState {
-  status: 'loading' | 'empty' | 'loaded' | 'error';
+  status: "loading" | "empty" | "loaded" | "error";
   activities: ActivityDto[];
   error?: string;
   totalCount?: number;
@@ -46,7 +46,7 @@ export interface MonthNavigationState {
 export interface ModalStates {
   activityForm: {
     open: boolean;
-    mode: 'create' | 'edit';
+    mode: "create" | "edit";
     activity?: ActivityDto;
   };
   deleteConfirmation: {

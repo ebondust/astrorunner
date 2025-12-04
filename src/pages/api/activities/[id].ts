@@ -1,7 +1,14 @@
 import type { APIContext } from "astro";
 import { randomUUID } from "node:crypto";
 
-import { badRequest, internalServerError, notFound, forbidden, unauthorized, unprocessableEntity } from "../../../lib/api/errors.ts";
+import {
+  badRequest,
+  internalServerError,
+  notFound,
+  forbidden,
+  unauthorized,
+  unprocessableEntity,
+} from "../../../lib/api/errors.ts";
 import { deleteActivity, replaceActivity } from "../../../lib/services/activity.service.ts";
 import { mapEntityToDto } from "../../../lib/mappers/activity.mapper.ts";
 import { createActivityCommandSchema } from "../../../lib/validators.ts";

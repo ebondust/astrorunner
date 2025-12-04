@@ -1,18 +1,6 @@
 import { useState, useEffect } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 
@@ -87,10 +75,7 @@ export function MonthYearPickerModal({
   const currentYear = new Date().getFullYear();
   const minYear = minDate ? minDate.getFullYear() : currentYear - 10;
   const maxYear = maxDate ? maxDate.getFullYear() : currentYear;
-  const years = Array.from(
-    { length: maxYear - minYear + 1 },
-    (_, i) => minYear + i
-  ).reverse(); // Most recent first
+  const years = Array.from({ length: maxYear - minYear + 1 }, (_, i) => minYear + i).reverse(); // Most recent first
 
   // Check if current selection is valid
   const isValidSelection = () => {
@@ -111,10 +96,7 @@ export function MonthYearPickerModal({
           {/* Month Selector */}
           <div className="grid gap-2">
             <Label htmlFor="month-select">Month</Label>
-            <Select
-              value={tempMonth.toString()}
-              onValueChange={(value) => setTempMonth(parseInt(value, 10))}
-            >
+            <Select value={tempMonth.toString()} onValueChange={(value) => setTempMonth(parseInt(value, 10))}>
               <SelectTrigger id="month-select">
                 <SelectValue placeholder="Select month" />
               </SelectTrigger>
@@ -131,10 +113,7 @@ export function MonthYearPickerModal({
           {/* Year Selector */}
           <div className="grid gap-2">
             <Label htmlFor="year-select">Year</Label>
-            <Select
-              value={tempYear.toString()}
-              onValueChange={(value) => setTempYear(parseInt(value, 10))}
-            >
+            <Select value={tempYear.toString()} onValueChange={(value) => setTempYear(parseInt(value, 10))}>
               <SelectTrigger id="year-select">
                 <SelectValue placeholder="Select year" />
               </SelectTrigger>

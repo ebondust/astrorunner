@@ -1,4 +1,4 @@
-import type { Page, Locator } from '@playwright/test';
+import type { Page, Locator } from "@playwright/test";
 
 /**
  * Page Object Model for the Delete Confirmation Modal
@@ -16,11 +16,11 @@ export class DeleteConfirmationModal {
   constructor(page: Page) {
     this.page = page;
     // AlertDialog uses role="alertdialog"
-    this.dialog = page.getByRole('alertdialog');
-    this.title = this.dialog.getByRole('heading', { name: /delete activity/i });
+    this.dialog = page.getByRole("alertdialog");
+    this.title = this.dialog.getByRole("heading", { name: /delete activity/i });
     this.description = this.dialog.getByText(/are you sure you want to delete this activity/i);
-    this.cancelButton = this.dialog.getByRole('button', { name: /cancel/i });
-    this.deleteButton = this.dialog.getByRole('button', { name: /delete/i });
+    this.cancelButton = this.dialog.getByRole("button", { name: /cancel/i });
+    this.deleteButton = this.dialog.getByRole("button", { name: /delete/i });
   }
 
   /**
@@ -34,7 +34,7 @@ export class DeleteConfirmationModal {
    * Wait for the delete confirmation modal to be visible
    */
   async waitForModal() {
-    await this.dialog.waitFor({ state: 'visible' });
+    await this.dialog.waitFor({ state: "visible" });
   }
 
   /**
@@ -55,6 +55,6 @@ export class DeleteConfirmationModal {
    * Wait for the modal to be hidden (after deletion or cancellation)
    */
   async waitForModalToClose() {
-    await this.dialog.waitFor({ state: 'hidden' });
+    await this.dialog.waitFor({ state: "hidden" });
   }
 }

@@ -1,8 +1,8 @@
-import { useState, useCallback } from 'react';
-import type { ActivityDto, ActivityType } from '@/types';
-import type { ActivityFormState, ActivityFormErrors } from '@/frontend-types';
-import { validateActivityForm, hasFormErrors } from '@/lib/utils/validation';
-import { iso8601ToDurationInput, metersToKm } from '@/lib/utils/date';
+import { useState, useCallback } from "react";
+import type { ActivityDto, ActivityType } from "@/types";
+import type { ActivityFormState, ActivityFormErrors } from "@/frontend-types";
+import { validateActivityForm, hasFormErrors } from "@/lib/utils/validation";
+import { iso8601ToDurationInput, metersToKm } from "@/lib/utils/date";
 
 interface UseActivityFormReturn {
   formState: ActivityFormState;
@@ -16,8 +16,8 @@ interface UseActivityFormReturn {
 
 const getInitialFormState = (): ActivityFormState => ({
   activityDate: new Date().toISOString(), // Default to now
-  duration: '',
-  activityType: 'Run',
+  duration: "",
+  activityType: "Run",
   distanceMeters: undefined,
 });
 
@@ -29,17 +29,14 @@ export function useActivityForm(): UseActivityFormReturn {
   const [errors, setErrors] = useState<ActivityFormErrors>({});
 
   // Set a single field value
-  const setField = useCallback(<K extends keyof ActivityFormState>(
-    field: K,
-    value: ActivityFormState[K]
-  ) => {
-    setFormState(prev => ({
+  const setField = useCallback(<K extends keyof ActivityFormState>(field: K, value: ActivityFormState[K]) => {
+    setFormState((prev) => ({
       ...prev,
       [field]: value,
     }));
 
     // Clear error for this field when user makes changes
-    setErrors(prev => {
+    setErrors((prev) => {
       const newErrors = { ...prev };
       delete newErrors[field];
       return newErrors;

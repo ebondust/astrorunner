@@ -116,12 +116,9 @@ describe("useActivities", () => {
 
     it("should refetch activities when selectedMonth changes", async () => {
       // Arrange
-      const { rerender } = renderHook(
-        ({ selectedMonth }) => useActivities({ selectedMonth }),
-        {
-          initialProps: { selectedMonth: new Date("2025-11-01T00:00:00Z") },
-        }
-      );
+      const { rerender } = renderHook(({ selectedMonth }) => useActivities({ selectedMonth }), {
+        initialProps: { selectedMonth: new Date("2025-11-01T00:00:00Z") },
+      });
 
       vi.mocked(activitiesApi.fetchActivities).mockResolvedValue({
         items: [],

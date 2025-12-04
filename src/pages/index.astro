@@ -6,8 +6,8 @@
 const user = Astro.locals.user;
 
 if (user) {
-  return Astro.redirect('/activities');
+  return Astro.redirect("/activities");
 } else {
-  return Astro.redirect('/auth/login');
+  return Astro.redirect("/auth/login");
 }
 ---

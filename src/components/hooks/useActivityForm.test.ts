@@ -126,7 +126,7 @@ describe("useActivityForm", () => {
       });
 
       // Act
-      let isValid: boolean = false;
+      let isValid = false;
       act(() => {
         isValid = result.current.validate();
       });
@@ -145,7 +145,7 @@ describe("useActivityForm", () => {
       });
 
       // Act
-      let isValid: boolean = true;
+      let isValid = true;
       act(() => {
         isValid = result.current.validate();
       });
@@ -164,7 +164,7 @@ describe("useActivityForm", () => {
       });
 
       // Act
-      let isValid: boolean = true;
+      let isValid = true;
       act(() => {
         isValid = result.current.validate();
       });
@@ -184,7 +184,7 @@ describe("useActivityForm", () => {
       });
 
       // Act
-      let isValid: boolean = true;
+      let isValid = true;
       act(() => {
         isValid = result.current.validate();
       });
@@ -205,7 +205,7 @@ describe("useActivityForm", () => {
       });
 
       // Act
-      let isValid: boolean = true;
+      let isValid = true;
       act(() => {
         isValid = result.current.validate();
       });
@@ -226,7 +226,7 @@ describe("useActivityForm", () => {
       });
 
       // Act
-      let isValid: boolean = false;
+      let isValid = false;
       act(() => {
         isValid = result.current.validate();
       });
@@ -495,7 +495,7 @@ describe("useActivityForm", () => {
       });
 
       // Act
-      let isValid: boolean = false;
+      let isValid = false;
       act(() => {
         isValid = result.current.validate();
       });
@@ -509,7 +509,7 @@ describe("useActivityForm", () => {
       // Arrange
       const { result } = renderHook(() => useActivityForm());
 
-      const types: Array<"Run" | "Walk" | "Mixed"> = ["Run", "Walk", "Mixed"];
+      const types: ("Run" | "Walk" | "Mixed")[] = ["Run", "Walk", "Mixed"];
 
       types.forEach((type) => {
         // Act

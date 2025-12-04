@@ -72,17 +72,13 @@ export function ResetPasswordForm({ onSubmit }: ResetPasswordFormProps) {
             {/* Success Message */}
             <div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
               <p className="text-sm text-foreground">
-                If an account exists with <strong>{email}</strong>, you will receive
-                a password reset link shortly.
+                If an account exists with <strong>{email}</strong>, you will receive a password reset link shortly.
               </p>
             </div>
 
             {/* Back to Login Link */}
             <div className="text-center">
-              <a
-                href="/auth/login"
-                className="text-sm text-primary hover:underline"
-              >
+              <a href="/auth/login" className="text-sm text-primary hover:underline">
                 Back to sign in
               </a>
             </div>
@@ -119,19 +115,13 @@ export function ResetPasswordForm({ onSubmit }: ResetPasswordFormProps) {
             {/* Links */}
             <div className="space-y-2 text-center text-sm">
               <div>
-                <a
-                  href="/auth/login"
-                  className="text-primary hover:underline"
-                >
+                <a href="/auth/login" className="text-primary hover:underline">
                   Back to sign in
                 </a>
               </div>
               <div className="text-muted-foreground">
                 Don't have an account?{" "}
-                <a
-                  href="/auth/register"
-                  className="text-primary hover:underline"
-                >
+                <a href="/auth/register" className="text-primary hover:underline">
                   Sign up
                 </a>
               </div>

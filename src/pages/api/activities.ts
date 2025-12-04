@@ -43,10 +43,7 @@ export async function GET(context: APIContext): Promise<Response> {
     const limit = parseInt(url.searchParams.get("limit") || "100", 10);
 
     // Build base query
-    let query = supabase
-      .from("activities")
-      .select("*", { count: "exact" })
-      .eq("user_id", userId);
+    let query = supabase.from("activities").select("*", { count: "exact" }).eq("user_id", userId);
 
     // Apply date range filters
     if (from) {
@@ -56,7 +53,7 @@ export async function GET(context: APIContext): Promise<Response> {
       // Add one day to include the entire 'to' date
       const toDate = new Date(to);
       toDate.setDate(toDate.getDate() + 1);
-      query = query.lt("activity_date", toDate.toISOString().split('T')[0]);
+      query = query.lt("activity_date", toDate.toISOString().split("T")[0]);
     }
 
     // Apply activity type filter
@@ -65,10 +62,14 @@ export async function GET(context: APIContext): Promise<Response> {
     }
 
     // Apply sorting
-    const sortColumn = sort === "activityDate" ? "activity_date"
-                     : sort === "duration" ? "duration"
-                     : sort === "distance" ? "distance"
-                     : "activity_date";
+    const sortColumn =
+      sort === "activityDate"
+        ? "activity_date"
+        : sort === "duration"
+          ? "duration"
+          : sort === "distance"
+            ? "distance"
+            : "activity_date";
     query = query.order(sortColumn, { ascending: order === "asc" });
 
     // Apply limit

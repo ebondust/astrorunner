@@ -9,12 +9,12 @@ export interface OpenRouterRequest {
 }
 
 export interface Message {
-  role: 'system' | 'user' | 'assistant';
+  role: "system" | "user" | "assistant";
   content: string;
 }
 
 export interface ResponseFormat {
-  type: 'json_schema';
+  type: "json_schema";
   json_schema: {
     name: string;
     strict: boolean;
@@ -23,7 +23,7 @@ export interface ResponseFormat {
 }
 
 export interface JSONSchema {
-  type: 'object';
+  type: "object";
   properties: Record<string, any>;
   required: string[];
   additionalProperties: boolean;
@@ -112,7 +112,7 @@ export interface ActivityStats {
   /** Total days in month */
   totalDays: number;
   /** User's preferred distance unit */
-  distanceUnit: 'km' | 'mi';
+  distanceUnit: "km" | "mi";
 }
 
 export interface GenerationOptions {
@@ -130,7 +130,7 @@ export interface MotivationalMessage {
   /** The generated motivational text (1-2 sentences) */
   message: string;
   /** Tone of the message */
-  tone: 'encouraging' | 'celebratory' | 'challenging';
+  tone: "encouraging" | "celebratory" | "challenging";
   /** Timestamp when generated */
   generatedAt: string; // ISO-8601
   /** Model used for generation */

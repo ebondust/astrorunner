@@ -12,10 +12,7 @@ interface TopBarProps {
  */
 export function TopBar({ user, onLogout }: TopBarProps) {
   return (
-    <nav
-      className="flex h-16 items-center justify-between px-4 md:px-6"
-      aria-label="Main navigation"
-    >
+    <nav className="flex h-16 items-center justify-between px-4 md:px-6" aria-label="Main navigation">
       {/* Logo / Branding */}
       <div className="flex items-center">
         <a
@@ -23,11 +20,7 @@ export function TopBar({ user, onLogout }: TopBarProps) {
           className="flex items-center gap-2 text-lg font-semibold transition-colors hover:opacity-80"
           aria-label="Go to activities page"
         >
-          <img
-            src="/logo.png"
-            alt="Activity Logger"
-            className="h-8 w-auto"
-          />
+          <img src="/logo.png" alt="Activity Logger" className="h-8 w-auto" />
           <span className="hidden sm:inline">Activity Logger</span>
         </a>
       </div>

@@ -12,7 +12,10 @@ interface EmptyStateProps {
  */
 export function EmptyState({ selectedMonth, onAddActivity }: EmptyStateProps) {
   return (
-    <div data-testid="empty-state" className="flex min-h-[400px] flex-col items-center justify-center gap-4 text-center">
+    <div
+      data-testid="empty-state"
+      className="flex min-h-[400px] flex-col items-center justify-center gap-4 text-center"
+    >
       {/* Icon */}
       <div className="rounded-full bg-muted p-4">
         <Activity className="h-12 w-12 text-muted-foreground" />
@@ -23,9 +26,7 @@ export function EmptyState({ selectedMonth, onAddActivity }: EmptyStateProps) {
         <h2 data-testid="empty-state-message" className="text-2xl font-semibold tracking-tight">
           No activities in {formatMonthYear(selectedMonth)}
         </h2>
-        <p className="text-muted-foreground">
-          Start tracking your activities
-        </p>
+        <p className="text-muted-foreground">Start tracking your activities</p>
       </div>
 
       {/* Call to action */}

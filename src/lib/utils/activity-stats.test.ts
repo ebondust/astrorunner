@@ -296,9 +296,9 @@ describe("activity-stats.ts - Activity Statistics Aggregation", () => {
       });
 
       // Act & Assert
-      await expect(
-        aggregateActivityStats(mockSupabase, userId, date, "km")
-      ).rejects.toThrow("Failed to fetch activities: Database connection failed");
+      await expect(aggregateActivityStats(mockSupabase, userId, date, "km")).rejects.toThrow(
+        "Failed to fetch activities: Database connection failed"
+      );
     });
 
     it("should handle February in non-leap year", async () => {

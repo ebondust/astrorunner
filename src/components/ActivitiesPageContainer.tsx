@@ -51,14 +51,7 @@ export function ActivitiesPageContainer({
   });
 
   // Activities data and CRUD operations
-  const {
-    activities,
-    loading,
-    error,
-    createActivity,
-    updateActivity,
-    deleteActivity,
-  } = useActivities({
+  const { activities, loading, error, createActivity, updateActivity, deleteActivity } = useActivities({
     selectedMonth,
   });
 
@@ -71,9 +64,7 @@ export function ActivitiesPageContainer({
   const [deletingActivity, setDeletingActivity] = useState<ActivityDto | undefined>();
 
   // Motivation state
-  const [motivation, setMotivation] = useState<MotivationalMessage | null>(
-    initialMotivation
-  );
+  const [motivation, setMotivation] = useState<MotivationalMessage | null>(initialMotivation);
   const [isRegeneratingMotivation, setIsRegeneratingMotivation] = useState(false);
   const [motivationError, setMotivationError] = useState<string | null>(initialMotivationError);
 
@@ -136,13 +127,16 @@ export function ActivitiesPageContainer({
   }, []);
 
   // Handler: Open delete confirmation
-  const handleDeleteActivity = useCallback((activityId: string) => {
-    const activity = activities.find((a) => a.activityId === activityId);
-    if (activity) {
-      setDeletingActivity(activity);
-      setDeleteConfirmationOpen(true);
-    }
-  }, [activities]);
+  const handleDeleteActivity = useCallback(
+    (activityId: string) => {
+      const activity = activities.find((a) => a.activityId === activityId);
+      if (activity) {
+        setDeletingActivity(activity);
+        setDeleteConfirmationOpen(true);
+      }
+    },
+    [activities]
+  );
 
   // Handler: Confirm delete
   const handleDeleteConfirm = useCallback(async () => {
@@ -173,10 +167,10 @@ export function ActivitiesPageContainer({
 
     try {
       // Call API endpoint to regenerate motivation
-      const response = await fetch('/api/motivation/generate', {
-        method: 'POST',
+      const response = await fetch("/api/motivation/generate", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           userId: user.userId,
@@ -187,7 +181,7 @@ export function ActivitiesPageContainer({
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Failed to regenerate motivation');
+        throw new Error(errorData.error || "Failed to regenerate motivation");
       }
 
       const responseData = await response.json();
@@ -204,8 +198,8 @@ export function ActivitiesPageContainer({
         setMotivationError(null); // Clear error on success
       }
     } catch (error) {
-      console.error('Failed to regenerate motivation:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to regenerate motivation';
+      console.error("Failed to regenerate motivation:", error);
+      const errorMessage = error instanceof Error ? error.message : "Failed to regenerate motivation";
       setMotivationError(errorMessage);
       // Keep existing motivation on error
     } finally {
@@ -215,9 +209,7 @@ export function ActivitiesPageContainer({
 
   // Check if we should show motivation (only for current month)
   const showMotivation =
-    aiMotivationEnabled &&
-    selectedMonth.getMonth() + 1 === currentMonth &&
-    selectedMonth.getFullYear() === currentYear;
+    aiMotivationEnabled && selectedMonth.getMonth() + 1 === currentMonth && selectedMonth.getFullYear() === currentYear;
 
   return (
     <>

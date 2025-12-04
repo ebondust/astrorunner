@@ -19,13 +19,9 @@ export function DateHeader({ date, isToday = false, isSticky = true }: DateHeade
         isSticky && "sticky top-32 z-30 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
       )}
     >
-      <h2 className="text-lg font-semibold">
-        {formatActivityDate(date)}
-      </h2>
+      <h2 className="text-lg font-semibold">{formatActivityDate(date)}</h2>
       {isToday && (
-        <span className="rounded-full bg-primary px-2 py-0.5 text-xs font-medium text-primary-foreground">
-          Today
-        </span>
+        <span className="rounded-full bg-primary px-2 py-0.5 text-xs font-medium text-primary-foreground">Today</span>
       )}
     </div>
   );

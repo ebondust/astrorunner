@@ -243,9 +243,7 @@ describe("validation.ts - Duration Validation", () => {
       const result = validateDuration(duration);
 
       // Assert
-      expect(result).toBe(
-        "Duration must be in HH.MM (e.g., 1.30), HH:MM (e.g., 1:30), or minutes (e.g., 90) format"
-      );
+      expect(result).toBe("Duration must be in HH.MM (e.g., 1.30), HH:MM (e.g., 1:30), or minutes (e.g., 90) format");
     });
 
     it("should return error for single digit minutes in HH:MM format", () => {
@@ -256,9 +254,7 @@ describe("validation.ts - Duration Validation", () => {
       const result = validateDuration(duration);
 
       // Assert
-      expect(result).toBe(
-        "Duration must be in HH.MM (e.g., 1.30), HH:MM (e.g., 1:30), or minutes (e.g., 90) format"
-      );
+      expect(result).toBe("Duration must be in HH.MM (e.g., 1.30), HH:MM (e.g., 1:30), or minutes (e.g., 90) format");
     });
 
     it("should accept valid edge case: 23:59", () => {

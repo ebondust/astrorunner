@@ -72,9 +72,7 @@ export function RegisterForm({ onSubmit }: RegisterFormProps) {
     <Card>
       <CardHeader>
         <CardTitle>Create Account</CardTitle>
-        <CardDescription>
-          Enter your details to create a new account
-        </CardDescription>
+        <CardDescription>Enter your details to create a new account</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -115,16 +113,10 @@ export function RegisterForm({ onSubmit }: RegisterFormProps) {
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                 aria-label={showPassword ? "Hide password" : "Show password"}
               >
-                {showPassword ? (
-                  <EyeOff className="h-4 w-4" />
-                ) : (
-                  <Eye className="h-4 w-4" />
-                )}
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
-            <p className="text-xs text-muted-foreground">
-              Must be at least 8 characters long
-            </p>
+            <p className="text-xs text-muted-foreground">Must be at least 8 characters long</p>
           </div>
 
           {/* Confirm Password Field */}
@@ -148,11 +140,7 @@ export function RegisterForm({ onSubmit }: RegisterFormProps) {
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                 aria-label={showConfirmPassword ? "Hide password" : "Show password"}
               >
-                {showConfirmPassword ? (
-                  <EyeOff className="h-4 w-4" />
-                ) : (
-                  <Eye className="h-4 w-4" />
-                )}
+                {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
           </div>
@@ -172,10 +160,7 @@ export function RegisterForm({ onSubmit }: RegisterFormProps) {
           {/* Links */}
           <div className="text-center text-sm text-muted-foreground">
             Already have an account?{" "}
-            <a
-              href="/auth/login"
-              className="text-primary hover:underline"
-            >
+            <a href="/auth/login" className="text-primary hover:underline">
               Sign in
             </a>
           </div>
