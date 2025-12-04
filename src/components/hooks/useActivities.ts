@@ -109,6 +109,13 @@ export function useActivities(options: UseActivitiesOptions): UseActivitiesRetur
       throw new Error('Activity not found');
     }
 
+    // Helper: Check if activity belongs to selected month
+    const belongsToSelectedMonth = (activityDate: string): boolean => {
+      const { start, end } = getMonthRange(selectedMonth);
+      const date = new Date(activityDate);
+      return date >= start && date <= end;
+    };
+
     // Optimistic update: update in list immediately
     const optimisticActivity: ActivityDto = {
       ...originalActivity,
@@ -118,30 +125,62 @@ export function useActivities(options: UseActivitiesOptions): UseActivitiesRetur
       distanceMeters: command.distanceMeters,
     };
 
-    setActivities(prev =>
-      prev.map(a => a.activityId === activityId ? optimisticActivity : a)
-    );
+    // Check if the updated activity still belongs to the current month
+    const stillInMonth = belongsToSelectedMonth(command.activityDate);
+
+    if (stillInMonth) {
+      // Keep in list but update it
+      setActivities(prev =>
+        prev.map(a => a.activityId === activityId ? optimisticActivity : a)
+      );
+    } else {
+      // Remove from list as it no longer belongs to this month
+      setActivities(prev => prev.filter(a => a.activityId !== activityId));
+      setTotalCount(prev => prev - 1);
+    }
 
     try {
       const updatedActivity = await activitiesApi.replaceActivity(activityId, command);
 
-      // Replace optimistic update with real data
-      setActivities(prev =>
-        prev.map(a => a.activityId === activityId ? updatedActivity : a)
-      );
+      // Check if the final updated activity belongs to the current month
+      const finallyInMonth = belongsToSelectedMonth(updatedActivity.activityDate);
+
+      if (finallyInMonth) {
+        // Replace optimistic update with real data
+        setActivities(prev =>
+          prev.map(a => a.activityId === activityId ? updatedActivity : a)
+        );
+      } else {
+        // Ensure it's removed (in case optimistic check was different)
+        setActivities(prev => prev.filter(a => a.activityId !== activityId));
+        setTotalCount(prev => Math.max(0, prev - 1));
+      }
 
       return updatedActivity;
     } catch (err) {
       // Revert optimistic update on error
-      setActivities(prev =>
-        prev.map(a => a.activityId === activityId ? originalActivity : a)
-      );
+      if (stillInMonth) {
+        // Restore original activity
+        setActivities(prev =>
+          prev.map(a => a.activityId === activityId ? originalActivity : a)
+        );
+      } else {
+        // Re-add the activity back to the list
+        setActivities(prev => {
+          const newList = [...prev, originalActivity];
+          newList.sort((a, b) =>
+            new Date(b.activityDate).getTime() - new Date(a.activityDate).getTime()
+          );
+          return newList;
+        });
+        setTotalCount(prev => prev + 1);
+      }
 
       const errorMessage = err instanceof Error ? err.message : 'Failed to update activity';
       setError(errorMessage);
       throw err;
     }
-  }, [activities]);
+  }, [activities, selectedMonth]);
 
   // Delete activity with optimistic update
   const deleteActivity = useCallback(async (activityId: string): Promise<void> => {

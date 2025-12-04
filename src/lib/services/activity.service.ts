@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "../../db/supabase.client.ts";
-import type { ActivityEntity, CreateActivityCommand } from "../../types.ts";
+import type { ActivityEntity, CreateActivityCommand, ReplaceActivityCommand } from "../../types.ts";
 import { mapCommandToEntity } from "../mappers/activity.mapper.ts";
 
 /**
@@ -34,4 +34,82 @@ export async function createActivity(
   }
 
   return data;
+}
+
+/**
+ * Replaces (updates) an activity in the database
+ * @param supabase - Authenticated Supabase client
+ * @param userId - ID of the authenticated user (from session, never from client input)
+ * @param activityId - ID of the activity to update
+ * @param command - Validated replace activity command
+ * @returns Updated activity entity
+ * @throws Error if database operation fails or activity not found
+ */
+export async function replaceActivity(
+  supabase: SupabaseClient,
+  userId: string,
+  activityId: string,
+  command: ReplaceActivityCommand
+): Promise<ActivityEntity> {
+  if (!userId || userId.trim().length === 0) {
+    throw new Error("User ID is required");
+  }
+
+  if (!activityId || activityId.trim().length === 0) {
+    throw new Error("Activity ID is required");
+  }
+
+  // Transform command to update entity using mapper
+  const updateEntity = mapCommandToEntity(command, userId);
+
+  // Update in database (RLS ensures user can only update their own activities)
+  const { data, error } = await supabase
+    .from("activities")
+    .update(updateEntity)
+    .eq("activity_id", activityId)
+    .eq("user_id", userId)
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(`Failed to update activity: ${error.message}`);
+  }
+
+  if (!data) {
+    throw new Error("Activity was not updated. No data returned from database.");
+  }
+
+  return data;
+}
+
+/**
+ * Deletes an activity from the database
+ * @param supabase - Authenticated Supabase client
+ * @param userId - ID of the authenticated user (from session, never from client input)
+ * @param activityId - ID of the activity to delete
+ * @throws Error if database operation fails or activity not found
+ */
+export async function deleteActivity(
+  supabase: SupabaseClient,
+  userId: string,
+  activityId: string
+): Promise<void> {
+  if (!userId || userId.trim().length === 0) {
+    throw new Error("User ID is required");
+  }
+
+  if (!activityId || activityId.trim().length === 0) {
+    throw new Error("Activity ID is required");
+  }
+
+  // Delete from database (RLS ensures user can only delete their own activities)
+  const { error } = await supabase
+    .from("activities")
+    .delete()
+    .eq("activity_id", activityId)
+    .eq("user_id", userId);
+
+  if (error) {
+    throw new Error(`Failed to delete activity: ${error.message}`);
+  }
 }

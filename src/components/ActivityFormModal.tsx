@@ -110,7 +110,7 @@ export function ActivityFormModal({
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleCancel()}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent data-testid="activity-form-modal" className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>
             {mode === "create" ? "Add Activity" : "Edit Activity"}
@@ -126,6 +126,7 @@ export function ActivityFormModal({
               </Label>
               <Input
                 id="activityDate"
+                data-testid="activity-date-input"
                 type="datetime-local"
                 value={getDateInputValue()}
                 onChange={(e) => handleDateChange(e.target.value)}
@@ -133,7 +134,7 @@ export function ActivityFormModal({
                 aria-describedby={errors.activityDate ? "activityDate-error" : undefined}
               />
               {errors.activityDate && (
-                <p id="activityDate-error" className="text-sm text-destructive">
+                <p id="activityDate-error" data-testid="date-error-message" className="text-sm text-destructive">
                   {errors.activityDate}
                 </p>
               )}
@@ -150,6 +151,7 @@ export function ActivityFormModal({
               >
                 <SelectTrigger
                   id="activityType"
+                  data-testid="activity-type-select"
                   aria-invalid={!!errors.activityType}
                   aria-describedby={errors.activityType ? "activityType-error" : undefined}
                 >
@@ -162,7 +164,7 @@ export function ActivityFormModal({
                 </SelectContent>
               </Select>
               {errors.activityType && (
-                <p id="activityType-error" className="text-sm text-destructive">
+                <p id="activityType-error" data-testid="type-error-message" className="text-sm text-destructive">
                   {errors.activityType}
                 </p>
               )}
@@ -175,6 +177,7 @@ export function ActivityFormModal({
               </Label>
               <Input
                 id="duration"
+                data-testid="duration-input"
                 type="text"
                 placeholder="1.30 or 90"
                 value={formState.duration}
@@ -186,7 +189,7 @@ export function ActivityFormModal({
                 Format: HH.MM (e.g., 1.30), HH:MM (e.g., 1:30), or minutes (e.g., 90)
               </p>
               {errors.duration && (
-                <p id="duration-error" className="text-sm text-destructive">
+                <p id="duration-error" data-testid="duration-error-message" className="text-sm text-destructive">
                   {errors.duration}
                 </p>
               )}
@@ -197,6 +200,7 @@ export function ActivityFormModal({
               <Label htmlFor="distanceKm">Distance (km)</Label>
               <Input
                 id="distanceKm"
+                data-testid="distance-input"
                 type="number"
                 step="0.01"
                 min="0"
@@ -215,7 +219,7 @@ export function ActivityFormModal({
                 Max 2 decimal places (e.g., 5.25 km)
               </p>
               {errors.distanceMeters && (
-                <p id="distanceMeters-error" className="text-sm text-destructive">
+                <p id="distanceMeters-error" data-testid="distance-error-message" className="text-sm text-destructive">
                   {errors.distanceMeters}
                 </p>
               )}
@@ -224,16 +228,16 @@ export function ActivityFormModal({
             {/* Form-level error */}
             {errors.form && (
               <div className="rounded-lg border border-destructive bg-destructive/10 p-3">
-                <p className="text-sm text-destructive">{errors.form}</p>
+                <p data-testid="form-error-message" className="text-sm text-destructive">{errors.form}</p>
               </div>
             )}
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={handleCancel}>
+            <Button data-testid="cancel-button" type="button" variant="outline" onClick={handleCancel}>
               Cancel
             </Button>
-            <Button type="submit">
+            <Button data-testid="submit-activity-button" type="submit">
               {mode === "create" ? "Add Activity" : "Save Changes"}
             </Button>
           </DialogFooter>

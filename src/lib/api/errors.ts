@@ -53,6 +53,46 @@ export function unauthorized(message = "Authentication required"): Response {
 }
 
 /**
+ * Creates a 403 Forbidden response
+ * @param message - Optional error message (defaults to "Access forbidden")
+ * @returns Response with 403 status code
+ */
+export function forbidden(message = "Access forbidden"): Response {
+  const body: ErrorResponse = {
+    error: "Forbidden",
+    message,
+  };
+
+  return new Response(JSON.stringify(body), {
+    status: 403,
+    statusText: "Forbidden",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+}
+
+/**
+ * Creates a 404 Not Found response
+ * @param message - Optional error message (defaults to "Resource not found")
+ * @returns Response with 404 status code
+ */
+export function notFound(message = "Resource not found"): Response {
+  const body: ErrorResponse = {
+    error: "NotFound",
+    message,
+  };
+
+  return new Response(JSON.stringify(body), {
+    status: 404,
+    statusText: "Not Found",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+}
+
+/**
  * Creates a 422 Unprocessable Entity response
  * @param message - Human-readable error message
  * @param details - Optional semantic validation error details

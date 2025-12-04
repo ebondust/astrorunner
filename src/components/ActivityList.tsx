@@ -64,7 +64,7 @@ export function ActivityList({
 
   return (
     <div className="container mx-auto px-4 py-6">
-      <div className="space-y-6">
+      <div data-testid="activity-list" className="space-y-6">
         {groupedActivities.map((group) => (
           <div key={group.date.toISOString()} className="space-y-1">
             {/* Date Header */}

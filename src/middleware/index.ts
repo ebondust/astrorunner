@@ -1,6 +1,6 @@
 import { defineMiddleware } from "astro:middleware";
 
-import { createSupabaseServerInstance, supabaseClient } from "@/db/supabase.client";
+import { createSupabaseServerInstance } from "@/db/supabase.client";
 
 // Public paths that don't require authentication
 const PUBLIC_PATHS = [
@@ -21,32 +21,32 @@ export const onRequest = defineMiddleware(async ({ locals, cookies, url, request
   // Check if current path is public
   const isPublicPath = PUBLIC_PATHS.some((path) => url.pathname === path || url.pathname.startsWith(path));
 
-  // For public paths, set legacy client and skip auth check
-  if (isPublicPath) {
-    // Lazy load supabaseClient only when needed
-    locals.supabase = supabaseClient;
-    return next();
-  }
-
-  // Create SSR-compatible Supabase client for auth operations
+  // Create SSR-compatible Supabase client for all requests
+  // This ensures we use the current environment variables
   const supabaseSSR = createSupabaseServerInstance({
     cookies,
     headers: request.headers,
   });
+
+  // For public paths, set client and skip auth check
+  if (isPublicPath) {
+    locals.supabase = supabaseSSR;
+    return next();
+  }
 
   // Get authenticated user from session
   const {
     data: { user },
   } = await supabaseSSR.auth.getUser();
 
-  // If user is authenticated, add to locals and set legacy client
+  // If user is authenticated, add to locals
   if (user) {
     locals.user = {
       id: user.id,
       email: user.email ?? "",
     };
-    // Set legacy client for backward compatibility
-    locals.supabase = supabaseClient;
+    // Use the SSR client instead of legacy client
+    locals.supabase = supabaseSSR;
     return next();
   }
 
