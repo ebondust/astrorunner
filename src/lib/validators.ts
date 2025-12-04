@@ -1,7 +1,5 @@
 import { z } from "zod";
 
-import type { ActivityType } from "../types.ts";
-
 /**
  * Validates ISO-8601 UTC date-time string
  * @param dateString - ISO-8601 UTC date-time string

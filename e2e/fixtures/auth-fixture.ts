@@ -49,6 +49,7 @@ export const test = base.extend({
     await page.waitForLoadState("networkidle");
 
     // Use the authenticated page
+    // eslint-disable-next-line react-hooks/rules-of-hooks -- This is Playwright's fixture API, not a React hook
     await use(page);
   },
 });

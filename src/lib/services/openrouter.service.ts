@@ -10,6 +10,17 @@ import type {
 } from "./openrouter.types";
 import { OpenRouterAPIError, OpenRouterValidationError, OpenRouterTimeoutError } from "./openrouter.errors";
 
+// Type guard for AbortError
+function isAbortError(error: unknown): error is DOMException {
+  return error instanceof DOMException && error.name === "AbortError";
+}
+
+// Interface for parsed motivational message from API
+interface ParsedMotivationalMessage {
+  message: string;
+  tone?: string;
+}
+
 export class OpenRouterService {
   private readonly apiKey: string;
   private readonly baseUrl: string;
@@ -191,13 +202,13 @@ export class OpenRouterService {
       clearTimeout(timeoutId);
 
       // Retry on network errors or timeouts
-      if ((error instanceof TypeError || (error as any).name === "AbortError") && attempt < this.maxRetries) {
+      if ((error instanceof TypeError || isAbortError(error)) && attempt < this.maxRetries) {
         const delay = Math.pow(2, attempt) * 1000;
         await this.delay(delay);
         return this.makeRequest(endpoint, body, attempt + 1);
       }
 
-      if ((error as any).name === "AbortError") {
+      if (isAbortError(error)) {
         throw new OpenRouterTimeoutError("Request timeout");
       }
 
@@ -395,11 +406,11 @@ Choose tone based on activity level:
 
     console.log("[OpenRouter] Raw content from API:", choice.message.content);
 
-    let parsed: any;
+    let parsed: ParsedMotivationalMessage;
     const content = choice.message.content;
 
     try {
-      parsed = JSON.parse(content);
+      parsed = JSON.parse(content) as ParsedMotivationalMessage;
       console.log("[OpenRouter] Parsed JSON:", parsed);
     } catch (error) {
       console.error("[OpenRouter] Failed to parse JSON directly:", error);
@@ -410,7 +421,7 @@ Choose tone based on activity level:
       if (jsonMatch && jsonMatch[1]) {
         console.log("[OpenRouter] Attempting to extract JSON from text:", jsonMatch[1]);
         try {
-          parsed = JSON.parse(jsonMatch[1]);
+          parsed = JSON.parse(jsonMatch[1]) as ParsedMotivationalMessage;
           console.log("[OpenRouter] Successfully extracted JSON:", parsed);
         } catch (extractError) {
           console.error("[OpenRouter] Failed to extract JSON:", extractError);

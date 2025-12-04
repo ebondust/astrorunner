@@ -277,15 +277,17 @@ describe("useActivities", () => {
 
       // Complete the API call
       await act(async () => {
-        resolveCreate!({
-          activityId: "act-real",
-          userId: "user-1",
-          activityDate: "2025-11-26T10:00:00Z",
-          duration: "PT45M",
-          activityType: "Run",
-          distanceMeters: 5000,
-        });
-        await createPromise;
+        if (resolveCreate) {
+          resolveCreate({
+            activityId: "act-real",
+            userId: "user-1",
+            activityDate: "2025-11-26T10:00:00Z",
+            duration: "PT45M",
+            activityType: "Run",
+            distanceMeters: 5000,
+          });
+          await createPromise;
+        }
       });
 
       // Assert - Temp should be replaced with real

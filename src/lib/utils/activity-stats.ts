@@ -1,6 +1,5 @@
 import type { SupabaseClient } from "../../db/supabase.client";
 import type { ActivityStats } from "../services/openrouter.types";
-import type { ActivityEntity } from "../../types";
 
 /**
  * Aggregate activity statistics for a given month

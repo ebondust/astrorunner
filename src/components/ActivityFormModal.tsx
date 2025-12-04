@@ -53,6 +53,7 @@ export function ActivityFormModal({ open, mode, activity, onSubmit, onCancel }: 
       await onSubmit(command);
       reset();
     } catch (error) {
+      // eslint-disable-next-line no-console -- Development logging for debugging
       console.error("Error submitting form:", error);
     }
   };

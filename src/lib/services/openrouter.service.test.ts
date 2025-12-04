@@ -1,7 +1,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { OpenRouterService } from "./openrouter.service";
-import { OpenRouterAPIError, OpenRouterValidationError, OpenRouterTimeoutError } from "./openrouter.errors";
-import type { ActivityStats, MotivationalMessage, OpenRouterResponse } from "./openrouter.types";
+import { OpenRouterAPIError, OpenRouterValidationError } from "./openrouter.errors";
+import type { ActivityStats, OpenRouterResponse } from "./openrouter.types";
+import type { Mock } from "vitest";
+
+// Type for mocked fetch function
+type MockFetch = Mock<Parameters<typeof fetch>, Promise<Response>>;
 
 describe("OpenRouterService", () => {
   let service: OpenRouterService;
@@ -111,7 +115,7 @@ describe("OpenRouterService", () => {
       it("should generate motivational message successfully", async () => {
         // Arrange
         const userId = "user-123";
-        (global.fetch as any).mockResolvedValue({
+        (global.fetch as MockFetch).mockResolvedValue({
           ok: true,
           status: 200,
           json: async () => mockApiResponse,
@@ -133,7 +137,7 @@ describe("OpenRouterService", () => {
       it("should return cached message on second call with same stats", async () => {
         // Arrange
         const userId = "user-cache";
-        (global.fetch as any).mockResolvedValue({
+        (global.fetch as MockFetch).mockResolvedValue({
           ok: true,
           status: 200,
           json: async () => mockApiResponse,
@@ -155,7 +159,7 @@ describe("OpenRouterService", () => {
       it("should bypass cache when bypassCache option is true", async () => {
         // Arrange
         const userId = "user-bypass";
-        (global.fetch as any).mockResolvedValue({
+        (global.fetch as MockFetch).mockResolvedValue({
           ok: true,
           status: 200,
           json: async () => mockApiResponse,
@@ -175,7 +179,7 @@ describe("OpenRouterService", () => {
       it("should handle custom temperature option", async () => {
         // Arrange
         const userId = "user-temp";
-        (global.fetch as any).mockResolvedValue({
+        (global.fetch as MockFetch).mockResolvedValue({
           ok: true,
           status: 200,
           json: async () => mockApiResponse,
@@ -185,15 +189,15 @@ describe("OpenRouterService", () => {
         await service.generateMotivationalMessage(userId, mockStats, { temperature: 0.5 });
 
         // Assert
-        const fetchCall = (global.fetch as any).mock.calls[0];
-        const requestBody = JSON.parse(fetchCall[1].body);
+        const fetchCall = (global.fetch as MockFetch).mock.calls[0];
+        const requestBody = JSON.parse(fetchCall[1].body as string);
         expect(requestBody.temperature).toBe(0.5);
       });
 
       it("should handle custom model option", async () => {
         // Arrange
         const userId = "user-model";
-        (global.fetch as any).mockResolvedValue({
+        (global.fetch as MockFetch).mockResolvedValue({
           ok: true,
           status: 200,
           json: async () => mockApiResponse,
@@ -203,8 +207,8 @@ describe("OpenRouterService", () => {
         await service.generateMotivationalMessage(userId, mockStats, { model: "custom-model" });
 
         // Assert
-        const fetchCall = (global.fetch as any).mock.calls[0];
-        const requestBody = JSON.parse(fetchCall[1].body);
+        const fetchCall = (global.fetch as MockFetch).mock.calls[0];
+        const requestBody = JSON.parse(fetchCall[1].body as string);
         expect(requestBody.model).toBe("custom-model");
       });
 
@@ -225,7 +229,7 @@ describe("OpenRouterService", () => {
             },
           ],
         };
-        (global.fetch as any).mockResolvedValue({
+        (global.fetch as MockFetch).mockResolvedValue({
           ok: true,
           status: 200,
           json: async () => responseWithMarkdown,
@@ -258,7 +262,7 @@ describe("OpenRouterService", () => {
             },
           ],
         };
-        (global.fetch as any).mockResolvedValue({
+        (global.fetch as MockFetch).mockResolvedValue({
           ok: true,
           status: 200,
           json: async () => responseWithoutTone,
@@ -276,7 +280,7 @@ describe("OpenRouterService", () => {
       it("should invalidate cache when stats change", async () => {
         // Arrange
         const userId = "user-stats-change";
-        (global.fetch as any).mockResolvedValue({
+        (global.fetch as MockFetch).mockResolvedValue({
           ok: true,
           status: 200,
           json: async () => mockApiResponse,
@@ -296,7 +300,7 @@ describe("OpenRouterService", () => {
       it("should invalidate cache after TTL expires", async () => {
         // Arrange
         const userId = "user-ttl";
-        (global.fetch as any).mockResolvedValue({
+        (global.fetch as MockFetch).mockResolvedValue({
           ok: true,
           status: 200,
           json: async () => mockApiResponse,
@@ -318,7 +322,7 @@ describe("OpenRouterService", () => {
       it("should clear cache for specific user", async () => {
         // Arrange
         const userId = "user-clear";
-        (global.fetch as any).mockResolvedValue({
+        (global.fetch as MockFetch).mockResolvedValue({
           ok: true,
           status: 200,
           json: async () => mockApiResponse,
@@ -425,7 +429,7 @@ describe("OpenRouterService", () => {
           model: "test-model",
           choices: [],
         };
-        (global.fetch as any).mockResolvedValue({
+        (global.fetch as MockFetch).mockResolvedValue({
           ok: true,
           status: 200,
           json: async () => invalidResponse,
@@ -454,7 +458,7 @@ describe("OpenRouterService", () => {
             },
           ],
         };
-        (global.fetch as any).mockResolvedValue({
+        (global.fetch as MockFetch).mockResolvedValue({
           ok: true,
           status: 200,
           json: async () => responseWithoutMessage,
@@ -471,7 +475,7 @@ describe("OpenRouterService", () => {
       it("should throw OpenRouterAPIError on 400 Bad Request", async () => {
         // Arrange
         const userId = "user-400";
-        (global.fetch as any).mockResolvedValue({
+        (global.fetch as MockFetch).mockResolvedValue({
           ok: false,
           status: 400,
           statusText: "Bad Request",
@@ -486,7 +490,7 @@ describe("OpenRouterService", () => {
       it("should throw OpenRouterAPIError on 401 Unauthorized", async () => {
         // Arrange
         const userId = "user-401";
-        (global.fetch as any).mockResolvedValue({
+        (global.fetch as MockFetch).mockResolvedValue({
           ok: false,
           status: 401,
           statusText: "Unauthorized",
@@ -500,7 +504,7 @@ describe("OpenRouterService", () => {
       it("should retry on 429 rate limit and eventually succeed", async () => {
         // Arrange
         const userId = "user-429";
-        (global.fetch as any)
+        (global.fetch as MockFetch)
           .mockResolvedValueOnce({
             ok: false,
             status: 429,
@@ -528,7 +532,7 @@ describe("OpenRouterService", () => {
       it("should retry on 500 server error and eventually succeed", async () => {
         // Arrange
         const userId = "user-500";
-        (global.fetch as any)
+        (global.fetch as MockFetch)
           .mockResolvedValueOnce({
             ok: false,
             status: 500,
@@ -554,7 +558,7 @@ describe("OpenRouterService", () => {
       it("should throw error after max retries on persistent 500 error", async () => {
         // Arrange
         const userId = "user-max-retries";
-        (global.fetch as any).mockResolvedValue({
+        (global.fetch as MockFetch).mockResolvedValue({
           ok: false,
           status: 500,
           statusText: "Internal Server Error",
@@ -562,8 +566,8 @@ describe("OpenRouterService", () => {
         });
 
         // Act & Assert - Handle promise and timers together
-        let error: any = null;
-        const promise = service.generateMotivationalMessage(userId, mockStats).catch((e) => {
+        let error: Error | null = null;
+        const promise = service.generateMotivationalMessage(userId, mockStats).catch((e: Error) => {
           error = e;
         });
 
@@ -585,7 +589,7 @@ describe("OpenRouterService", () => {
         const abortError = new Error("The operation was aborted");
         abortError.name = "AbortError";
 
-        (global.fetch as any)
+        (global.fetch as MockFetch)
           .mockRejectedValueOnce(abortError) // First attempt: timeout (AbortError)
           .mockResolvedValueOnce({
             ok: true,
@@ -627,7 +631,7 @@ describe("OpenRouterService", () => {
           },
         ],
       };
-      (global.fetch as any).mockResolvedValue({
+      (global.fetch as MockFetch).mockResolvedValue({
         ok: true,
         status: 200,
         json: async () => mockResponse,
@@ -642,7 +646,7 @@ describe("OpenRouterService", () => {
 
     it("should return false when connection fails", async () => {
       // Arrange
-      (global.fetch as any).mockResolvedValue({
+      (global.fetch as MockFetch).mockResolvedValue({
         ok: false,
         status: 401,
         statusText: "Unauthorized",
@@ -658,7 +662,7 @@ describe("OpenRouterService", () => {
 
     it("should return false on network error", async () => {
       // Arrange
-      (global.fetch as any).mockRejectedValue(new Error("Network error"));
+      (global.fetch as MockFetch).mockRejectedValue(new Error("Network error"));
 
       // Act
       const result = await service.testConnection();
@@ -701,7 +705,7 @@ describe("OpenRouterService", () => {
           },
         ],
       };
-      (global.fetch as any).mockResolvedValue({
+      (global.fetch as MockFetch).mockResolvedValue({
         ok: true,
         status: 200,
         json: async () => mockResponse,

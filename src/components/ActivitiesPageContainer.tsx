@@ -111,6 +111,7 @@ export function ActivitiesPageContainer({
         setActivityFormOpen(false);
         setEditingActivity(undefined);
       } catch (error) {
+        // eslint-disable-next-line no-console -- Development logging for debugging
         console.error("Error submitting activity form:", error);
         // Error is already handled in the hook with optimistic updates
       }
@@ -144,6 +145,7 @@ export function ActivitiesPageContainer({
         setDeleteConfirmationOpen(false);
         setDeletingActivity(undefined);
       } catch (error) {
+        // eslint-disable-next-line no-console -- Development logging for debugging
         console.error("Error deleting activity:", error);
         // Error is already handled in the hook with optimistic updates
       }
@@ -196,6 +198,7 @@ export function ActivitiesPageContainer({
         setMotivationError(null); // Clear error on success
       }
     } catch (error) {
+      // eslint-disable-next-line no-console -- Development logging for debugging
       console.error("Failed to regenerate motivation:", error);
       const errorMessage = error instanceof Error ? error.message : "Failed to regenerate motivation";
       setMotivationError(errorMessage);

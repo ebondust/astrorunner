@@ -22,9 +22,18 @@ export interface ResponseFormat {
   };
 }
 
+export interface JSONSchemaProperty {
+  type: string;
+  description?: string;
+  enum?: string[];
+  items?: JSONSchemaProperty;
+  properties?: Record<string, JSONSchemaProperty>;
+  required?: string[];
+}
+
 export interface JSONSchema {
   type: "object";
-  properties: Record<string, any>;
+  properties: Record<string, JSONSchemaProperty>;
   required: string[];
   additionalProperties: boolean;
 }

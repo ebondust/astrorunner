@@ -52,6 +52,7 @@ export function useActivities(options: UseActivitiesOptions): UseActivitiesRetur
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to fetch activities";
       setError(errorMessage);
+      // eslint-disable-next-line no-console -- Development logging for debugging
       console.error("Error fetching activities:", err);
     } finally {
       setLoading(false);

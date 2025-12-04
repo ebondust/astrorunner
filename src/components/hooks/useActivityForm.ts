@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import type { ActivityDto, ActivityType } from "@/types";
+import type { ActivityDto } from "@/types";
 import type { ActivityFormState, ActivityFormErrors } from "@/frontend-types";
 import { validateActivityForm, hasFormErrors } from "@/lib/utils/validation";
 import { iso8601ToDurationInput, metersToKm } from "@/lib/utils/date";
@@ -38,6 +38,7 @@ export function useActivityForm(): UseActivityFormReturn {
     // Clear error for this field when user makes changes
     setErrors((prev) => {
       const newErrors = { ...prev };
+      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete -- Safe to delete from error object
       delete newErrors[field];
       return newErrors;
     });

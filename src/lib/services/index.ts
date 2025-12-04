@@ -10,6 +10,7 @@ let openRouterServiceInstance: OpenRouterService | null = null;
  * Get or create OpenRouter service instance
  * Returns null if API key is not configured
  */
+/* eslint-disable no-console -- Initialization logging for service setup */
 export function getOpenRouterService(): OpenRouterService | null {
   // Return existing instance if already created
   if (openRouterServiceInstance) {
@@ -52,6 +53,7 @@ export function getOpenRouterService(): OpenRouterService | null {
     return null;
   }
 }
+/* eslint-enable no-console */
 
 /**
  * Check if AI motivation feature is enabled

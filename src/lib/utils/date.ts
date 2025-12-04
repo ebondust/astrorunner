@@ -126,7 +126,10 @@ export function groupActivitiesByDate(activities: ActivityDto[]): GroupedActivit
     if (!grouped.has(dateKey)) {
       grouped.set(dateKey, []);
     }
-    grouped.get(dateKey)!.push(activity);
+    const group = grouped.get(dateKey);
+    if (group) {
+      group.push(activity);
+    }
   }
 
   // Convert to array and sort by date (descending)
