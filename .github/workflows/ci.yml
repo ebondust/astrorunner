@@ -1,0 +1,55 @@
+name: CI - Build & Test
+
+on:
+  # Trigger on push to master branch
+  push:
+    branches: [master]
+
+  # Trigger on pull requests targeting master
+  pull_request:
+    branches: [master]
+
+  # Allow manual workflow dispatch
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      # Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Setup Node.js with version from .nvmrc
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+
+      # Install dependencies
+      - name: Install dependencies
+        run: npm ci
+
+      # Run linting
+      - name: Run ESLint
+        run: npm run lint
+
+      # Run unit tests
+      - name: Run unit tests
+        run: npm run test -- --run
+
+      # Build for production
+      - name: Build production bundle
+        run: npm run build
+
+      # Upload build artifacts (optional, useful for debugging)
+      - name: Upload build artifacts
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          retention-days: 7
