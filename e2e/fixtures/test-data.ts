@@ -149,7 +149,7 @@ export const invalidFormData = {
 
   missingRequired: {
     dateTime: "",
-    type: "" as any,
+    type: "" as "Run" | "Walk" | "Mixed" | "",
     duration: "",
   },
 };

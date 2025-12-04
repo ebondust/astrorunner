@@ -120,7 +120,7 @@ export function ResetPasswordForm({ onSubmit }: ResetPasswordFormProps) {
                 </a>
               </div>
               <div className="text-muted-foreground">
-                Don't have an account?{" "}
+                Don&apos;t have an account?{" "}
                 <a href="/auth/register" className="text-primary hover:underline">
                   Sign up
                 </a>

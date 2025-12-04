@@ -39,8 +39,6 @@ export function ActivitiesPageContainer({
   const {
     selectedMonth,
     currentMonth: currentMonthDate,
-    goToPreviousMonth,
-    goToNextMonth,
     goToToday,
     goToMonth,
     isCurrentMonth,

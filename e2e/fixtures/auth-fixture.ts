@@ -13,6 +13,7 @@ export const test = base.extend({
    * Authenticated page fixture
    * Automatically logs in before each test
    */
+
   page: async ({ page }, use) => {
     // Navigate to login page
     await page.goto("/login");

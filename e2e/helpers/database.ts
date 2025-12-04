@@ -9,9 +9,9 @@ import type { Database } from "../../src/db/database.types";
  */
 
 // Get E2E test user credentials from environment
-export const E2E_USER_ID = process.env.E2E_USERNAME_ID!;
-export const E2E_USERNAME = process.env.E2E_USERNAME!;
-export const E2E_PASSWORD = process.env.E2E_PASSWORD!;
+export const E2E_USER_ID = process.env.E2E_USERNAME_ID ?? "";
+export const E2E_USERNAME = process.env.E2E_USERNAME ?? "";
+export const E2E_PASSWORD = process.env.E2E_PASSWORD ?? "";
 
 /**
  * Create Supabase client for E2E tests

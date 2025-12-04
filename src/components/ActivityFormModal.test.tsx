@@ -9,15 +9,21 @@ vi.mock("./hooks/useActivityForm");
 
 // Mock the date utils
 vi.mock("@/lib/utils/date", () => ({
-  durationInputToISO8601: vi.fn((val) => "PT1H30M"),
-  kmToMeters: vi.fn((val) => (val == null ? undefined : val * 1000)),
+  durationInputToISO8601: vi.fn(() => "PT1H30M"),
+  kmToMeters: vi.fn((val: number | null | undefined) => (val == null ? undefined : val * 1000)),
 }));
 
 // Mock ResizeObserver for Radix UI
 global.ResizeObserver = class ResizeObserver {
-  observe() {}
-  unobserve() {}
-  disconnect() {}
+  observe() {
+    // Mock implementation
+  }
+  unobserve() {
+    // Mock implementation
+  }
+  disconnect() {
+    // Mock implementation
+  }
 };
 
 // Mock PointerEvent for Radix UI
@@ -26,13 +32,14 @@ class MockPointerEvent extends Event {
   ctrlKey: boolean;
   pointerType: string;
 
-  constructor(type: string, props: any) {
+  constructor(type: string, props: { button?: number; ctrlKey?: boolean; pointerType?: string } = {}) {
     super(type, props);
     this.button = props?.button || 0;
     this.ctrlKey = props?.ctrlKey || false;
     this.pointerType = props?.pointerType || "mouse";
   }
 }
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 window.PointerEvent = MockPointerEvent as any;
 window.HTMLElement.prototype.scrollIntoView = vi.fn();
 window.HTMLElement.prototype.releasePointerCapture = vi.fn();

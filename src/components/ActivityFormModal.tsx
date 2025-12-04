@@ -118,7 +118,10 @@ export function ActivityFormModal({ open, mode, activity, onSubmit, onCancel }: 
               <Label htmlFor="activityType">
                 Activity Type <span className="text-destructive">*</span>
               </Label>
-              <Select value={formState.activityType} onValueChange={(value) => setField("activityType", value as any)}>
+              <Select
+                value={formState.activityType}
+                onValueChange={(value) => setField("activityType", value as "Run" | "Walk" | "Mixed")}
+              >
                 <SelectTrigger
                   id="activityType"
                   data-testid="activity-type-select"
