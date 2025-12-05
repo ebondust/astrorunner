@@ -17,7 +17,9 @@
       "Bash(npx eslint:*)",
       "Bash(npx supabase gen types:*)",
       "Bash(src/db/database.types.new.ts)",
-      "Bash(python -c:*)"
+      "Bash(python -c:*)",
+      "Bash(node -c:*)",
+      "Bash(git checkout:*)"
     ],
     "deny": [],
     "ask": []
