@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useActivityForm } from "./hooks/useActivityForm";
 import { durationInputToISO8601, kmToMeters } from "@/lib/utils/date";
+import { logger } from "@/lib/utils/logger";
 
 interface ActivityFormModalProps {
   open: boolean;
@@ -53,8 +54,7 @@ export function ActivityFormModal({ open, mode, activity, onSubmit, onCancel }: 
       await onSubmit(command);
       reset();
     } catch (error) {
-      // eslint-disable-next-line no-console -- Development logging for debugging
-      console.error("Error submitting form:", error);
+      logger.error("Error submitting form:", { error });
     }
   };
 

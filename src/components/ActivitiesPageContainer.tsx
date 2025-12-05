@@ -11,6 +11,7 @@ import { useMonthNavigation } from "./hooks/useMonthNavigation";
 import { useActivities } from "./hooks/useActivities";
 import { getCurrentMonthStart } from "@/lib/utils/date";
 import type { MotivationalMessage } from "@/lib/services";
+import { logger } from "@/lib/utils/logger";
 
 interface ActivitiesPageContainerProps {
   user: AuthUserBasicDto;
@@ -111,8 +112,7 @@ export function ActivitiesPageContainer({
         setActivityFormOpen(false);
         setEditingActivity(undefined);
       } catch (error) {
-        // eslint-disable-next-line no-console -- Development logging for debugging
-        console.error("Error submitting activity form:", error);
+        logger.error("Error submitting activity form:", { error });
         // Error is already handled in the hook with optimistic updates
       }
     },
@@ -145,8 +145,7 @@ export function ActivitiesPageContainer({
         setDeleteConfirmationOpen(false);
         setDeletingActivity(undefined);
       } catch (error) {
-        // eslint-disable-next-line no-console -- Development logging for debugging
-        console.error("Error deleting activity:", error);
+        logger.error("Error deleting activity:", { error });
         // Error is already handled in the hook with optimistic updates
       }
     }
@@ -198,8 +197,7 @@ export function ActivitiesPageContainer({
         setMotivationError(null); // Clear error on success
       }
     } catch (error) {
-      // eslint-disable-next-line no-console -- Development logging for debugging
-      console.error("Failed to regenerate motivation:", error);
+      logger.error("Failed to regenerate motivation:", { error });
       const errorMessage = error instanceof Error ? error.message : "Failed to regenerate motivation";
       setMotivationError(errorMessage);
       // Keep existing motivation on error

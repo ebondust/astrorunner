@@ -6,6 +6,7 @@ import {
   aggregateActivityStats,
 } from "@/lib/services";
 import type { MotivationalMessage } from "@/lib/services";
+import { logger } from "@/lib/utils/logger";
 
 export const prerender = false;
 
@@ -45,7 +46,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       try {
         motivation = await service.generateMotivationalMessage(userId, stats, { bypassCache });
       } catch (apiError) {
-        console.error("Failed to generate AI motivation:", apiError);
+        logger.error("Failed to generate AI motivation:", { error: apiError });
         const errorMessage = apiError instanceof Error ? apiError.message : "Failed to generate motivation";
         error = errorMessage;
         // Use fallback - generic motivational text in English
@@ -64,7 +65,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       },
     });
   } catch (error) {
-    console.error("Error generating motivation:", error);
+    logger.error("Error generating motivation:", { error });
     return new Response(JSON.stringify({ error: "Failed to generate motivation" }), {
       status: 500,
       headers: { "Content-Type": "application/json" },

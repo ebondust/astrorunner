@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { User, LogOut } from "lucide-react";
+import { logger } from "@/lib/utils/logger";
 
 interface UserMenuProps {
   user: AuthUserBasicDto;
@@ -43,14 +44,12 @@ export function UserMenu({ user, onLogout }: UserMenuProps) {
           // Redirect to login page
           window.location.href = "/auth/login";
         } else {
-          // eslint-disable-next-line no-console -- Development logging for debugging
-          console.error("Logout failed:", response.status);
+          logger.error("Logout failed:", { status: response.status });
           // Still redirect to login page even if logout fails
           window.location.href = "/auth/login";
         }
       } catch (error) {
-        // eslint-disable-next-line no-console -- Development logging for debugging
-        console.error("Logout error:", error);
+        logger.error("Logout error:", { error });
         // Still redirect to login page even on error
         window.location.href = "/auth/login";
       }

@@ -1,5 +1,6 @@
 import type { ActivityDto, ActivityEntity, ActivityInsertEntity, CreateActivityCommand } from "../../types.ts";
 import { parseDuration, validateDistance } from "../validators.ts";
+import { logger } from "../utils/logger";
 
 /**
  * Converts PostgreSQL INTERVAL string to ISO-8601 duration format
@@ -55,8 +56,7 @@ function intervalToIso8601(interval: unknown): string {
   if (seconds > 0) parts.push(`${seconds}S`);
 
   if (parts.length === 0) {
-    // eslint-disable-next-line no-console -- Development logging for debugging
-    console.warn(`Unable to parse interval format: "${interval}", returning PT0S`);
+    logger.warn(`Unable to parse interval format: "${interval}", returning PT0S`);
     return "PT0S";
   }
 

@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect } from "react";
 import type { ActivityDto, CreateActivityCommand, ReplaceActivityCommand, ActivitiesListQuery } from "@/types";
 import * as activitiesApi from "@/lib/api/activities.client";
 import { getMonthRange, toISODate } from "@/lib/utils/date";
+import { logger } from "@/lib/utils/logger";
 
 interface UseActivitiesReturn {
   activities: ActivityDto[];
@@ -52,8 +53,7 @@ export function useActivities(options: UseActivitiesOptions): UseActivitiesRetur
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to fetch activities";
       setError(errorMessage);
-      // eslint-disable-next-line no-console -- Development logging for debugging
-      console.error("Error fetching activities:", err);
+      logger.error("Error fetching activities:", { error: err });
     } finally {
       setLoading(false);
     }

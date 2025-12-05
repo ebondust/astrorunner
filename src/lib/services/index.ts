@@ -1,4 +1,5 @@
 import { OpenRouterService } from "./openrouter.service";
+import { logger } from "../utils/logger";
 
 /**
  * Singleton instance of OpenRouter service
@@ -10,35 +11,34 @@ let openRouterServiceInstance: OpenRouterService | null = null;
  * Get or create OpenRouter service instance
  * Returns null if API key is not configured
  */
-/* eslint-disable no-console -- Initialization logging for service setup */
 export function getOpenRouterService(): OpenRouterService | null {
   // Return existing instance if already created
   if (openRouterServiceInstance) {
-    console.log("[OpenRouter Init] Returning existing service instance");
+    logger.debug("[OpenRouter Init] Returning existing service instance");
     return openRouterServiceInstance;
   }
 
-  console.log("[OpenRouter Init] Initializing new service instance");
+  logger.debug("[OpenRouter Init] Initializing new service instance");
 
   // Check if API key is configured
   const apiKey = import.meta.env.OPENROUTER_API_KEY;
   const hasApiKey = apiKey && apiKey.trim().length > 0;
-  console.log("[OpenRouter Init] API key configured:", hasApiKey);
+  logger.debug("[OpenRouter Init] API key configured:", { hasApiKey });
 
   if (!hasApiKey) {
-    console.warn("[OpenRouter Init] OpenRouter API key not configured. AI motivation feature will be disabled.");
+    logger.warn("[OpenRouter Init] OpenRouter API key not configured. AI motivation feature will be disabled.");
     return null;
   }
 
-  console.log("[OpenRouter Init] API key prefix:", apiKey.substring(0, 10) + "...");
+  logger.debug("[OpenRouter Init] API key prefix:", { prefix: apiKey.substring(0, 10) + "..." });
 
   // Create new instance
   try {
     const model = import.meta.env.OPENROUTER_MODEL;
     const cacheTTL = import.meta.env.OPENROUTER_CACHE_TTL ? parseInt(import.meta.env.OPENROUTER_CACHE_TTL) : undefined;
 
-    console.log("[OpenRouter Init] Model:", model || "default (meta-llama/llama-3.3-70b-instruct:free)");
-    console.log("[OpenRouter Init] Cache TTL:", cacheTTL || "900000 (15 min)");
+    logger.debug("[OpenRouter Init] Model:", { model: model || "default (meta-llama/llama-3.3-70b-instruct:free)" });
+    logger.debug("[OpenRouter Init] Cache TTL:", { cacheTTL: cacheTTL || "900000 (15 min)" });
 
     openRouterServiceInstance = new OpenRouterService({
       apiKey: apiKey,
@@ -46,14 +46,13 @@ export function getOpenRouterService(): OpenRouterService | null {
       cacheTTL: cacheTTL,
     });
 
-    console.log("[OpenRouter Init] Service initialized successfully");
+    logger.debug("[OpenRouter Init] Service initialized successfully");
     return openRouterServiceInstance;
   } catch (error) {
-    console.error("[OpenRouter Init] Failed to initialize OpenRouter service:", error);
+    logger.error("[OpenRouter Init] Failed to initialize OpenRouter service:", { error });
     return null;
   }
 }
-/* eslint-enable no-console */
 
 /**
  * Check if AI motivation feature is enabled

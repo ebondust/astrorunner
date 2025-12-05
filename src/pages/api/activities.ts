@@ -6,6 +6,7 @@ import { mapEntityToDto } from "../../lib/mappers/activity.mapper.ts";
 import { createActivity } from "../../lib/services/activity.service.ts";
 import { createActivityCommandSchema } from "../../lib/validators.ts";
 import type { CreateActivityResponseDto, ActivitiesListDto } from "../../types.ts";
+import { logger } from "@/lib/utils/logger";
 
 // Disable prerendering for this API route (SSR required)
 export const prerender = false;
@@ -21,7 +22,7 @@ export async function GET(context: APIContext): Promise<Response> {
     // Get Supabase client from context.locals
     const supabase = context.locals.supabase;
     if (!supabase) {
-      console.error(`[${correlationId}] Supabase client not found in context.locals`);
+      logger.error("Supabase client not found in context.locals", { correlationId });
       return internalServerError(correlationId);
     }
 
@@ -79,7 +80,7 @@ export async function GET(context: APIContext): Promise<Response> {
     const { data, error, count } = await query;
 
     if (error) {
-      console.error(`[${correlationId}] Database error:`, error.message);
+      logger.error("Database error:", { correlationId, error: error.message });
       return internalServerError(correlationId);
     }
 
@@ -100,7 +101,7 @@ export async function GET(context: APIContext): Promise<Response> {
       },
     });
   } catch (error) {
-    console.error(`[${correlationId}] Unexpected error in GET /api/activities:`, error);
+    logger.error("Unexpected error in GET /api/activities:", { correlationId, error });
     return internalServerError(correlationId);
   }
 }
@@ -116,7 +117,7 @@ export async function POST(context: APIContext): Promise<Response> {
     // Step 1: Get Supabase client from context.locals
     const supabase = context.locals.supabase;
     if (!supabase) {
-      console.error(`[${correlationId}] Supabase client not found in context.locals`);
+      logger.error("Supabase client not found in context.locals", { correlationId });
       return internalServerError(correlationId);
     }
 
@@ -182,11 +183,11 @@ export async function POST(context: APIContext): Promise<Response> {
         }
 
         // Database errors
-        console.error(`[${correlationId}] Database error:`, error.message);
+        logger.error("Database error:", { correlationId, error: error.message });
         return internalServerError(correlationId);
       }
 
-      console.error(`[${correlationId}] Unexpected error:`, error);
+      logger.error("Unexpected error:", { correlationId, error });
       return internalServerError(correlationId);
     }
 
@@ -203,7 +204,7 @@ export async function POST(context: APIContext): Promise<Response> {
     });
   } catch (error) {
     // Catch-all for unexpected errors
-    console.error(`[${correlationId}] Unexpected error in POST /api/activities:`, error);
+    logger.error("Unexpected error in POST /api/activities:", { correlationId, error });
     return internalServerError(correlationId);
   }
 }
