@@ -586,8 +586,7 @@ describe("OpenRouterService", () => {
         const userId = "user-timeout";
 
         // Simulate AbortError (what happens when AbortController.abort() is called)
-        const abortError = new Error("The operation was aborted");
-        abortError.name = "AbortError";
+        const abortError = new DOMException("The operation was aborted", "AbortError");
 
         (global.fetch as MockFetch)
           .mockRejectedValueOnce(abortError) // First attempt: timeout (AbortError)
