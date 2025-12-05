@@ -55,10 +55,20 @@ test.describe("User Story 2: Create New Activity", () => {
 
     // Act: Fill form with all fields
     await formModal.fillActivityForm(formInputData.runWithAllFields);
+
+    // Wait for the POST API call to complete before reload
+    const createActivityPromise = page.waitForResponse(
+      (response) => response.url().includes("/api/activities") && response.request().method() === "POST"
+    );
+
     await formModal.submit();
 
     // Assert: Modal closes
     await expect(formModal.modal).toBeHidden();
+
+    // Wait for the API call to complete
+    const createResponse = await createActivityPromise;
+    expect(createResponse.status()).toBe(201);
 
     // Assert: Optimistic update - activity appears immediately
     const cards = await activitiesPage.getActivityCards();
@@ -101,10 +111,20 @@ test.describe("User Story 2: Create New Activity", () => {
 
     // Act: Fill form with required fields only (no distance)
     await formModal.fillActivityForm(formInputData.walkRequiredOnly);
+
+    // Wait for the POST API call to complete before reload
+    const createActivityPromise = page.waitForResponse(
+      (response) => response.url().includes("/api/activities") && response.request().method() === "POST"
+    );
+
     await formModal.submit();
 
     // Assert: Modal closes
     await expect(formModal.modal).toBeHidden();
+
+    // Wait for the API call to complete
+    const createResponse = await createActivityPromise;
+    expect(createResponse.status()).toBe(201);
 
     // Assert: Activity appears
     const cards = await activitiesPage.getActivityCards();
