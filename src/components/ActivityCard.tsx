@@ -45,15 +45,28 @@ export function ActivityCard({ activity, distanceUnit, onEdit, onDelete }: Activ
         {/* Badge, Time, and Action Buttons Row */}
         <div className="flex items-center justify-between gap-2 bg-muted/30 px-4 py-2">
           <div className="flex items-center gap-2">
-            <Badge data-testid="activity-type-badge" className={`${ACTIVITY_TYPE_COLORS[activity.activityType]} rounded-md`} variant="default">
+            <Badge
+              data-testid="activity-type-badge"
+              className={`${ACTIVITY_TYPE_COLORS[activity.activityType]} rounded-md`}
+              variant="default"
+            >
               {activity.activityType}
             </Badge>
-            <span data-testid="activity-time" className="text-sm text-muted-foreground">{timeString}</span>
+            <span data-testid="activity-time" className="text-sm text-muted-foreground">
+              {timeString}
+            </span>
           </div>
 
           {/* Action Buttons */}
           <div className="flex gap-1">
-            <Button data-testid="edit-activity-button" variant="ghost" size="icon" onClick={handleEdit} aria-label="Edit activity" className="h-8 w-8">
+            <Button
+              data-testid="edit-activity-button"
+              variant="ghost"
+              size="icon"
+              onClick={handleEdit}
+              aria-label="Edit activity"
+              className="h-8 w-8"
+            >
               <Edit className="h-4 w-4" />
             </Button>
             <Button
@@ -74,7 +87,9 @@ export function ActivityCard({ activity, distanceUnit, onEdit, onDelete }: Activ
           {/* Duration */}
           <div className="flex items-center gap-1.5">
             <Clock className="h-4 w-4 text-muted-foreground" />
-            <span data-testid="activity-duration" className="font-medium">{formatDuration(activity.duration)}</span>
+            <span data-testid="activity-duration" className="font-medium">
+              {formatDuration(activity.duration)}
+            </span>
           </div>
 
           {/* Distance */}

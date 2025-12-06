@@ -1,4 +1,4 @@
-import type { Page, Locator } from '@playwright/test';
+import type { Page, Locator } from "@playwright/test";
 
 /**
  * Page Object Model for the Activities page
@@ -14,17 +14,17 @@ export class ActivitiesPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.addActivityButton = page.getByTestId('add-activity-button');
-    this.activityList = page.getByTestId('activity-list');
-    this.emptyState = page.getByTestId('empty-state');
-    this.loadingSkeleton = page.getByTestId('skeleton-loader');
+    this.addActivityButton = page.getByTestId("add-activity-button");
+    this.activityList = page.getByTestId("activity-list");
+    this.emptyState = page.getByTestId("empty-state");
+    this.loadingSkeleton = page.getByTestId("skeleton-loader");
   }
 
   /**
    * Navigate to the activities page
    */
   async goto() {
-    await this.page.goto('/activities');
+    await this.page.goto("/activities");
   }
 
   /**
@@ -38,14 +38,14 @@ export class ActivitiesPage {
    * Get all activity cards on the page
    */
   async getActivityCards() {
-    return this.page.getByTestId('activity-card').all();
+    return this.page.getByTestId("activity-card").all();
   }
 
   /**
    * Get a specific activity card by index (0-based)
    */
   async getActivityCardByIndex(index: number) {
-    return this.page.getByTestId('activity-card').nth(index);
+    return this.page.getByTestId("activity-card").nth(index);
   }
 
   /**
@@ -60,7 +60,7 @@ export class ActivitiesPage {
    */
   async waitForActivitiesToLoad() {
     // Wait for skeleton to disappear
-    await this.loadingSkeleton.waitFor({ state: 'hidden', timeout: 10000 }).catch(() => {
+    await this.loadingSkeleton.waitFor({ state: "hidden", timeout: 10000 }).catch(() => {
       // Skeleton might not appear if data loads fast, that's ok
     });
   }
@@ -78,7 +78,7 @@ export class ActivitiesPage {
    */
   async clickDeleteOnCard(index: number) {
     const card = await this.getActivityCardByIndex(index);
-    const deleteButton = card.getByTestId('delete-activity-button');
+    const deleteButton = card.getByTestId("delete-activity-button");
     await deleteButton.click();
   }
 
@@ -94,7 +94,7 @@ export class ActivitiesPage {
    */
   async clickEditOnCard(index: number) {
     const card = await this.getActivityCardByIndex(index);
-    const editButton = card.getByTestId('edit-activity-button');
+    const editButton = card.getByTestId("edit-activity-button");
     await editButton.click();
   }
 

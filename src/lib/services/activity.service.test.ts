@@ -2,6 +2,25 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { createActivity } from "./activity.service";
 import type { SupabaseClient } from "../../db/supabase.client";
 import type { CreateActivityCommand, ActivityEntity } from "../../types";
+import type { Mock } from "vitest";
+
+// Type for the mocked Supabase client's from method
+type MockFromMethod = Mock<
+  Parameters<SupabaseClient["from"]>,
+  {
+    insert: Mock<
+      [unknown],
+      {
+        select: Mock<
+          [],
+          {
+            single: Mock<[], Promise<{ data: ActivityEntity | null; error: unknown | null }>>;
+          }
+        >;
+      }
+    >;
+  }
+>;
 
 describe("activity.service.ts", () => {
   describe("createActivity", () => {
@@ -49,7 +68,7 @@ describe("activity.service.ts", () => {
           select: mockSelect,
         });
 
-        (mockSupabase.from as any).mockReturnValue({
+        (mockSupabase.from as MockFromMethod).mockReturnValue({
           insert: mockInsert,
         });
 
@@ -99,7 +118,7 @@ describe("activity.service.ts", () => {
           select: mockSelect,
         });
 
-        (mockSupabase.from as any).mockReturnValue({
+        (mockSupabase.from as MockFromMethod).mockReturnValue({
           insert: mockInsert,
         });
 
@@ -148,7 +167,7 @@ describe("activity.service.ts", () => {
           select: mockSelect,
         });
 
-        (mockSupabase.from as any).mockReturnValue({
+        (mockSupabase.from as MockFromMethod).mockReturnValue({
           insert: mockInsert,
         });
 
@@ -190,7 +209,7 @@ describe("activity.service.ts", () => {
           select: mockSelect,
         });
 
-        (mockSupabase.from as any).mockReturnValue({
+        (mockSupabase.from as MockFromMethod).mockReturnValue({
           insert: mockInsert,
         });
 
@@ -256,7 +275,7 @@ describe("activity.service.ts", () => {
           select: mockSelect,
         });
 
-        (mockSupabase.from as any).mockReturnValue({
+        (mockSupabase.from as MockFromMethod).mockReturnValue({
           insert: mockInsert,
         });
 
@@ -287,7 +306,7 @@ describe("activity.service.ts", () => {
           select: mockSelect,
         });
 
-        (mockSupabase.from as any).mockReturnValue({
+        (mockSupabase.from as MockFromMethod).mockReturnValue({
           insert: mockInsert,
         });
 
@@ -323,7 +342,7 @@ describe("activity.service.ts", () => {
           select: mockSelect,
         });
 
-        (mockSupabase.from as any).mockReturnValue({
+        (mockSupabase.from as MockFromMethod).mockReturnValue({
           insert: mockInsert,
         });
 
@@ -366,7 +385,7 @@ describe("activity.service.ts", () => {
           select: mockSelect,
         });
 
-        (mockSupabase.from as any).mockReturnValue({
+        (mockSupabase.from as MockFromMethod).mockReturnValue({
           insert: mockInsert,
         });
 
@@ -415,7 +434,7 @@ describe("activity.service.ts", () => {
           select: mockSelect,
         });
 
-        (mockSupabase.from as any).mockReturnValue({
+        (mockSupabase.from as MockFromMethod).mockReturnValue({
           insert: mockInsert,
         });
 
@@ -465,7 +484,7 @@ describe("activity.service.ts", () => {
           select: mockSelect,
         });
 
-        (mockSupabase.from as any).mockReturnValue({
+        (mockSupabase.from as MockFromMethod).mockReturnValue({
           insert: mockInsert,
         });
 
@@ -507,7 +526,7 @@ describe("activity.service.ts", () => {
           select: mockSelect,
         });
 
-        (mockSupabase.from as any).mockReturnValue({
+        (mockSupabase.from as MockFromMethod).mockReturnValue({
           insert: mockInsert,
         });
 
@@ -539,7 +558,8 @@ describe("activity.service.ts", () => {
             activity_id: `activity-${testCase.type.toLowerCase()}`,
             user_id: userId,
             activity_date: "2025-11-26T10:00:00Z",
-            duration: testCase.duration === "PT45M" ? "45 minutes" : testCase.duration === "PT30M" ? "30 minutes" : "1 hour",
+            duration:
+              testCase.duration === "PT45M" ? "45 minutes" : testCase.duration === "PT30M" ? "30 minutes" : "1 hour",
             activity_type: testCase.type,
             distance: null,
           };
@@ -556,7 +576,7 @@ describe("activity.service.ts", () => {
             select: mockSelect,
           });
 
-          (mockSupabase.from as any).mockReturnValue({
+          (mockSupabase.from as MockFromMethod).mockReturnValue({
             insert: mockInsert,
           });
 

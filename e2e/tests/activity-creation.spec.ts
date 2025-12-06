@@ -1,8 +1,8 @@
-import { test, expect } from '../fixtures/auth-fixture';
-import { ActivitiesPage } from '../page-objects/activities-page';
-import { ActivityFormModal } from '../page-objects/activity-form-modal';
-import { cleanupTestData, getTestUserId } from '../helpers/database';
-import { formInputData } from '../fixtures/test-data';
+import { test, expect } from "../fixtures/auth-fixture";
+import { ActivitiesPage } from "../page-objects/activities-page";
+import { ActivityFormModal } from "../page-objects/activity-form-modal";
+import { cleanupTestData, getTestUserId } from "../helpers/database";
+import { formInputData } from "../fixtures/test-data";
 
 /**
  * E2E Tests for User Story 2: Create New Activity
@@ -18,7 +18,7 @@ import { formInputData } from '../fixtures/test-data';
 
 test.describe.configure({ mode: "serial" });
 
-test.describe('User Story 2: Create New Activity', () => {
+test.describe("User Story 2: Create New Activity", () => {
   let activitiesPage: ActivitiesPage;
   let formModal: ActivityFormModal;
   const userId = getTestUserId();
@@ -45,7 +45,7 @@ test.describe('User Story 2: Create New Activity', () => {
    * and that the activity appears immediately (optimistic update) and persists
    * after page refresh.
    */
-  test('TC-E2E-004: should create activity with all fields', async ({ page }) => {
+  test("TC-E2E-004: should create activity with all fields", async ({ page }) => {
     // Arrange: Verify empty state
     expect(await activitiesPage.isEmptyStateVisible()).toBe(true);
 
@@ -55,10 +55,20 @@ test.describe('User Story 2: Create New Activity', () => {
 
     // Act: Fill form with all fields
     await formModal.fillActivityForm(formInputData.runWithAllFields);
+
+    // Wait for the POST API call to complete before reload
+    const createActivityPromise = page.waitForResponse(
+      (response) => response.url().includes("/api/activities") && response.request().method() === "POST"
+    );
+
     await formModal.submit();
 
     // Assert: Modal closes
     await expect(formModal.modal).toBeHidden();
+
+    // Wait for the API call to complete
+    const createResponse = await createActivityPromise;
+    expect(createResponse.status()).toBe(201);
 
     // Assert: Optimistic update - activity appears immediately
     const cards = await activitiesPage.getActivityCards();
@@ -66,13 +76,18 @@ test.describe('User Story 2: Create New Activity', () => {
 
     // Assert: Verify activity details
     const newCard = await activitiesPage.getActivityCardByIndex(0);
-    await expect(newCard.getByTestId('activity-type-badge')).toHaveText('Run');
-    await expect(newCard.getByTestId('activity-time')).toContainText('14:30');
-    await expect(newCard.getByTestId('activity-duration')).toContainText('1h 45m');
-    await expect(newCard.getByTestId('activity-distance')).toContainText('12.00 km');
+    await expect(newCard.getByTestId("activity-type-badge")).toHaveText("Run");
+    await expect(newCard.getByTestId("activity-time")).toContainText("14:30");
+    await expect(newCard.getByTestId("activity-duration")).toContainText("1h 45m");
+    await expect(newCard.getByTestId("activity-distance")).toContainText("12.00 km");
 
     // Assert: Activity persists after refresh
+    // Wait for both the reload and the GET API call to complete
+    const getActivitiesPromise = page.waitForResponse(
+      (response) => response.url().includes("/api/activities") && response.request().method() === "GET"
+    );
     await page.reload();
+    await getActivitiesPromise;
     await activitiesPage.waitForActivitiesToLoad();
 
     const persistedCards = await activitiesPage.getActivityCards();
@@ -80,8 +95,8 @@ test.describe('User Story 2: Create New Activity', () => {
 
     // Verify details still match after reload
     const persistedCard = await activitiesPage.getActivityCardByIndex(0);
-    await expect(persistedCard.getByTestId('activity-type-badge')).toHaveText('Run');
-    await expect(persistedCard.getByTestId('activity-duration')).toContainText('1h 45m');
+    await expect(persistedCard.getByTestId("activity-type-badge")).toHaveText("Run");
+    await expect(persistedCard.getByTestId("activity-duration")).toContainText("1h 45m");
   });
 
   /**
@@ -91,7 +106,7 @@ test.describe('User Story 2: Create New Activity', () => {
    * optional fields (distance), and that the UI displays a placeholder
    * for missing optional data.
    */
-  test('TC-E2E-005: should create activity with required fields only', async ({ page }) => {
+  test("TC-E2E-005: should create activity with required fields only", async ({ page }) => {
     // Arrange: Verify empty state
     expect(await activitiesPage.isEmptyStateVisible()).toBe(true);
 
@@ -101,10 +116,20 @@ test.describe('User Story 2: Create New Activity', () => {
 
     // Act: Fill form with required fields only (no distance)
     await formModal.fillActivityForm(formInputData.walkRequiredOnly);
+
+    // Wait for the POST API call to complete before reload
+    const createActivityPromise = page.waitForResponse(
+      (response) => response.url().includes("/api/activities") && response.request().method() === "POST"
+    );
+
     await formModal.submit();
 
     // Assert: Modal closes
     await expect(formModal.modal).toBeHidden();
+
+    // Wait for the API call to complete
+    const createResponse = await createActivityPromise;
+    expect(createResponse.status()).toBe(201);
 
     // Assert: Activity appears
     const cards = await activitiesPage.getActivityCards();
@@ -112,15 +137,20 @@ test.describe('User Story 2: Create New Activity', () => {
 
     // Assert: Verify activity details
     const newCard = await activitiesPage.getActivityCardByIndex(0);
-    await expect(newCard.getByTestId('activity-type-badge')).toHaveText('Walk');
-    await expect(newCard.getByTestId('activity-time')).toContainText('09:00');
-    await expect(newCard.getByTestId('activity-duration')).toContainText('30m');
+    await expect(newCard.getByTestId("activity-type-badge")).toHaveText("Walk");
+    await expect(newCard.getByTestId("activity-time")).toContainText("09:00");
+    await expect(newCard.getByTestId("activity-duration")).toContainText("30m");
 
     // Assert: Distance shows placeholder when not provided
-    await expect(newCard.getByTestId('activity-distance')).toContainText('—');
+    await expect(newCard.getByTestId("activity-distance")).toContainText("—");
 
     // Assert: Activity persists after refresh
+    // Wait for both the reload and the GET API call to complete
+    const getActivitiesPromise = page.waitForResponse(
+      (response) => response.url().includes("/api/activities") && response.request().method() === "GET"
+    );
     await page.reload();
+    await getActivitiesPromise;
     await activitiesPage.waitForActivitiesToLoad();
 
     const persistedCards = await activitiesPage.getActivityCards();
@@ -133,7 +163,7 @@ test.describe('User Story 2: Create New Activity', () => {
    * Verifies that canceling the activity form does not create an activity
    * and that any entered data is discarded.
    */
-  test('TC-E2E-006: should cancel activity creation without saving', async ({ page }) => {
+  test("TC-E2E-006: should cancel activity creation without saving", async ({ page }) => {
     // Arrange: Verify empty state
     expect(await activitiesPage.isEmptyStateVisible()).toBe(true);
 
@@ -158,7 +188,12 @@ test.describe('User Story 2: Create New Activity', () => {
     expect(cardCount).toBe(0);
 
     // Assert: Verify no activity was created by refreshing
+    // Wait for both the reload and the GET API call to complete
+    const getActivitiesPromise = page.waitForResponse(
+      (response) => response.url().includes("/api/activities") && response.request().method() === "GET"
+    );
     await page.reload();
+    await getActivitiesPromise;
     await activitiesPage.waitForActivitiesToLoad();
     expect(await activitiesPage.isEmptyStateVisible()).toBe(true);
   });

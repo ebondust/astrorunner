@@ -44,13 +44,6 @@ export default defineConfig({
     {
       name: "setup",
       testMatch: /global\.setup\.ts/,
-      teardown: "cleanup",
-    },
-
-    // Teardown project - runs after all tests
-    {
-      name: "cleanup",
-      testMatch: /global\.teardown\.ts/,
     },
 
     // Main test project - depends on setup
@@ -58,6 +51,13 @@ export default defineConfig({
       name: "chromium",
       use: { ...devices["Desktop Chrome"] },
       dependencies: ["setup"],
+      teardown: "cleanup",
+    },
+
+    // Teardown project - runs after chromium tests complete
+    {
+      name: "cleanup",
+      testMatch: /global\.teardown\.ts/,
     },
   ],
 

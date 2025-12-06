@@ -1,4 +1,4 @@
-import type { ActivityStats, MotivationalMessage } from './openrouter.types';
+import type { ActivityStats, MotivationalMessage } from "./openrouter.types";
 
 /**
  * Get fallback motivational message based on activity stats
@@ -6,30 +6,30 @@ import type { ActivityStats, MotivationalMessage } from './openrouter.types';
  */
 export function getFallbackMotivation(stats: ActivityStats): MotivationalMessage {
   let message: string;
-  let tone: 'encouraging' | 'celebratory' | 'challenging';
+  let tone: "encouraging" | "celebratory" | "challenging";
 
   if (stats.totalActivities === 0) {
     message = "Ready to start? Add your first activity and begin your journey!";
-    tone = 'encouraging';
+    tone = "encouraging";
   } else if (stats.totalActivities >= 20) {
     message = "Incredible consistency! You're crushing your fitness goals this month.";
-    tone = 'celebratory';
+    tone = "celebratory";
   } else if (stats.totalActivities >= 10) {
     message = `Great progress with ${stats.totalActivities} activities! Keep the momentum going.`;
-    tone = 'encouraging';
+    tone = "encouraging";
   } else if (stats.daysRemaining > 7) {
     message = `${stats.totalActivities} activities so far. Plenty of time to add more!`;
-    tone = 'challenging';
+    tone = "challenging";
   } else {
     message = "Every step counts! Keep moving and finish the month strong.";
-    tone = 'encouraging';
+    tone = "encouraging";
   }
 
   return {
     message,
     tone,
     generatedAt: new Date().toISOString(),
-    model: 'fallback',
+    model: "fallback",
     cached: false,
   };
 }

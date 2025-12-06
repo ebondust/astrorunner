@@ -5,7 +5,7 @@ import type {
   CreateActivityCommand,
   ReplaceActivityCommand,
   PatchActivityCommand,
-} from '@/types';
+} from "@/types";
 
 /**
  * Fetch activities with query parameters
@@ -14,16 +14,16 @@ export async function fetchActivities(query: ActivitiesListQuery): Promise<Activ
   const params = new URLSearchParams();
 
   // Add query parameters
-  if (query.limit) params.append('limit', query.limit.toString());
-  if (query.cursor) params.append('cursor', query.cursor);
-  if (query.page) params.append('page', query.page.toString());
-  if (query.pageSize) params.append('pageSize', query.pageSize.toString());
-  if (query.from) params.append('from', query.from);
-  if (query.to) params.append('to', query.to);
-  if (query.type) params.append('type', query.type);
-  if (query.hasDistance !== undefined) params.append('hasDistance', query.hasDistance.toString());
-  if (query.sort) params.append('sort', query.sort);
-  if (query.order) params.append('order', query.order);
+  if (query.limit) params.append("limit", query.limit.toString());
+  if (query.cursor) params.append("cursor", query.cursor);
+  if (query.page) params.append("page", query.page.toString());
+  if (query.pageSize) params.append("pageSize", query.pageSize.toString());
+  if (query.from) params.append("from", query.from);
+  if (query.to) params.append("to", query.to);
+  if (query.type) params.append("type", query.type);
+  if (query.hasDistance !== undefined) params.append("hasDistance", query.hasDistance.toString());
+  if (query.sort) params.append("sort", query.sort);
+  if (query.order) params.append("order", query.order);
 
   const response = await fetch(`/api/activities?${params.toString()}`);
 
@@ -43,7 +43,7 @@ export async function getActivity(activityId: string): Promise<ActivityDto> {
 
   if (!response.ok) {
     if (response.status === 404) {
-      throw new Error('Activity not found');
+      throw new Error("Activity not found");
     }
     const errorData = await response.json().catch(() => ({ message: response.statusText }));
     throw new Error(errorData.message || `Failed to get activity: ${response.statusText}`);
@@ -56,10 +56,10 @@ export async function getActivity(activityId: string): Promise<ActivityDto> {
  * Create a new activity
  */
 export async function createActivity(command: CreateActivityCommand): Promise<ActivityDto> {
-  const response = await fetch('/api/activities', {
-    method: 'POST',
+  const response = await fetch("/api/activities", {
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     body: JSON.stringify(command),
   });
@@ -69,7 +69,7 @@ export async function createActivity(command: CreateActivityCommand): Promise<Ac
 
     // Handle validation errors (400)
     if (response.status === 400 && errorData.errors) {
-      throw new Error(errorData.errors[0]?.message || 'Validation error');
+      throw new Error(errorData.errors[0]?.message || "Validation error");
     }
 
     throw new Error(errorData.message || `Failed to create activity: ${response.statusText}`);
@@ -81,31 +81,28 @@ export async function createActivity(command: CreateActivityCommand): Promise<Ac
 /**
  * Replace an activity (full update with PUT)
  */
-export async function replaceActivity(
-  activityId: string,
-  command: ReplaceActivityCommand
-): Promise<ActivityDto> {
+export async function replaceActivity(activityId: string, command: ReplaceActivityCommand): Promise<ActivityDto> {
   const response = await fetch(`/api/activities/${activityId}`, {
-    method: 'PUT',
+    method: "PUT",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     body: JSON.stringify(command),
   });
 
   if (!response.ok) {
     if (response.status === 404) {
-      throw new Error('Activity not found');
+      throw new Error("Activity not found");
     }
     if (response.status === 403) {
-      throw new Error('You do not have permission to update this activity');
+      throw new Error("You do not have permission to update this activity");
     }
 
     const errorData = await response.json().catch(() => ({ message: response.statusText }));
 
     // Handle validation errors (400)
     if (response.status === 400 && errorData.errors) {
-      throw new Error(errorData.errors[0]?.message || 'Validation error');
+      throw new Error(errorData.errors[0]?.message || "Validation error");
     }
 
     throw new Error(errorData.message || `Failed to update activity: ${response.statusText}`);
@@ -117,31 +114,28 @@ export async function replaceActivity(
 /**
  * Partially update an activity (PATCH)
  */
-export async function patchActivity(
-  activityId: string,
-  command: PatchActivityCommand
-): Promise<ActivityDto> {
+export async function patchActivity(activityId: string, command: PatchActivityCommand): Promise<ActivityDto> {
   const response = await fetch(`/api/activities/${activityId}`, {
-    method: 'PATCH',
+    method: "PATCH",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     body: JSON.stringify(command),
   });
 
   if (!response.ok) {
     if (response.status === 404) {
-      throw new Error('Activity not found');
+      throw new Error("Activity not found");
     }
     if (response.status === 403) {
-      throw new Error('You do not have permission to update this activity');
+      throw new Error("You do not have permission to update this activity");
     }
 
     const errorData = await response.json().catch(() => ({ message: response.statusText }));
 
     // Handle validation errors (400)
     if (response.status === 400 && errorData.errors) {
-      throw new Error(errorData.errors[0]?.message || 'Validation error');
+      throw new Error(errorData.errors[0]?.message || "Validation error");
     }
 
     throw new Error(errorData.message || `Failed to update activity: ${response.statusText}`);
@@ -155,7 +149,7 @@ export async function patchActivity(
  */
 export async function deleteActivity(activityId: string): Promise<void> {
   const response = await fetch(`/api/activities/${activityId}`, {
-    method: 'DELETE',
+    method: "DELETE",
   });
 
   if (!response.ok) {
@@ -164,7 +158,7 @@ export async function deleteActivity(activityId: string): Promise<void> {
       return;
     }
     if (response.status === 403) {
-      throw new Error('You do not have permission to delete this activity');
+      throw new Error("You do not have permission to delete this activity");
     }
 
     const errorData = await response.json().catch(() => ({ message: response.statusText }));

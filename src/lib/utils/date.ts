@@ -6,11 +6,11 @@ import type { GroupedActivities } from "@/frontend-types";
  */
 export function formatActivityDate(date: Date): string {
   const options: Intl.DateTimeFormatOptions = {
-    weekday: 'long',
-    month: 'short',
-    day: 'numeric'
+    weekday: "long",
+    month: "short",
+    day: "numeric",
   };
-  return date.toLocaleDateString('en-US', options);
+  return date.toLocaleDateString("en-US", options);
 }
 
 /**
@@ -18,10 +18,10 @@ export function formatActivityDate(date: Date): string {
  */
 export function formatMonthYear(date: Date): string {
   const options: Intl.DateTimeFormatOptions = {
-    month: 'long',
-    year: 'numeric'
+    month: "long",
+    year: "numeric",
   };
-  return date.toLocaleDateString('en-US', options);
+  return date.toLocaleDateString("en-US", options);
 }
 
 /**
@@ -30,7 +30,7 @@ export function formatMonthYear(date: Date): string {
 export function formatDuration(isoDuration: string): string {
   // Handle HH:MM:SS format first
   if (isoDuration.match(/^\d{2}:\d{2}:\d{2}$/)) {
-    const [hours, minutes] = isoDuration.split(':').map(Number);
+    const [hours, minutes] = isoDuration.split(":").map(Number);
     if (hours > 0 && minutes > 0) {
       return `${hours}h ${minutes}m`;
     } else if (hours > 0) {
@@ -38,7 +38,7 @@ export function formatDuration(isoDuration: string): string {
     } else if (minutes > 0) {
       return `${minutes}m`;
     }
-    return '0m';
+    return "0m";
   }
 
   // Parse ISO-8601 duration format (PT1H30M or PT45M)
@@ -47,23 +47,23 @@ export function formatDuration(isoDuration: string): string {
     return isoDuration; // Return as-is if can't parse
   }
 
-  const hours = parseInt(match[1] || '0', 10);
-  const minutes = parseInt(match[2] || '0', 10);
-  const seconds = parseInt(match[3] || '0', 10);
+  const hours = parseInt(match[1] || "0", 10);
+  const minutes = parseInt(match[2] || "0", 10);
+  const seconds = parseInt(match[3] || "0", 10);
 
   const parts: string[] = [];
   if (hours > 0) parts.push(`${hours}h`);
   if (minutes > 0) parts.push(`${minutes}m`);
   if (seconds > 0 && hours === 0) parts.push(`${seconds}s`); // Only show seconds if no hours
 
-  return parts.length > 0 ? parts.join(' ') : '0m';
+  return parts.length > 0 ? parts.join(" ") : "0m";
 }
 
 /**
  * Convert meters to kilometers or miles with proper formatting
  */
 export function formatDistance(meters: number, unit: DistanceUnit): string {
-  if (unit === 'km') {
+  if (unit === "km") {
     const km = meters / 1000;
     return `${km.toFixed(2)} km`;
   } else {
@@ -86,18 +86,22 @@ export function getMonthRange(month: Date): { start: Date; end: Date } {
  */
 export function isToday(date: Date): boolean {
   const today = new Date();
-  return date.getDate() === today.getDate() &&
+  return (
+    date.getDate() === today.getDate() &&
     date.getMonth() === today.getMonth() &&
-    date.getFullYear() === today.getFullYear();
+    date.getFullYear() === today.getFullYear()
+  );
 }
 
 /**
  * Check if two dates are the same day
  */
 export function isSameDay(date1: Date, date2: Date): boolean {
-  return date1.getDate() === date2.getDate() &&
+  return (
+    date1.getDate() === date2.getDate() &&
     date1.getMonth() === date2.getMonth() &&
-    date1.getFullYear() === date2.getFullYear();
+    date1.getFullYear() === date2.getFullYear()
+  );
 }
 
 /**
@@ -117,12 +121,15 @@ export function groupActivitiesByDate(activities: ActivityDto[]): GroupedActivit
   // Group activities by date
   for (const activity of activities) {
     const date = new Date(activity.activityDate);
-    const dateKey = date.toISOString().split('T')[0];
+    const dateKey = date.toISOString().split("T")[0];
 
     if (!grouped.has(dateKey)) {
       grouped.set(dateKey, []);
     }
-    grouped.get(dateKey)!.push(activity);
+    const group = grouped.get(dateKey);
+    if (group) {
+      group.push(activity);
+    }
   }
 
   // Convert to array and sort by date (descending)
@@ -132,7 +139,7 @@ export function groupActivitiesByDate(activities: ActivityDto[]): GroupedActivit
     result.push({
       date,
       activities,
-      isToday: isToday(date)
+      isToday: isToday(date),
     });
   }
 
@@ -146,7 +153,7 @@ export function groupActivitiesByDate(activities: ActivityDto[]): GroupedActivit
  * Convert Date to ISO-8601 date string (YYYY-MM-DD)
  */
 export function toISODate(date: Date): string {
-  return date.toISOString().split('T')[0];
+  return date.toISOString().split("T")[0];
 }
 
 /**
@@ -180,7 +187,7 @@ export function durationInputToISO8601(input: string): string {
     if (hours > 0) parts.push(`${hours}H`);
     if (minutes > 0) parts.push(`${minutes}M`);
 
-    return `PT${parts.join('')}`;
+    return `PT${parts.join("")}`;
   }
 
   // Handle single number (minutes)
@@ -207,12 +214,12 @@ export function iso8601ToDurationInput(iso8601: string): string {
     return iso8601; // Return as-is if can't parse
   }
 
-  const hours = parseInt(match[1] || '0', 10);
-  const minutes = parseInt(match[2] || '0', 10);
+  const hours = parseInt(match[1] || "0", 10);
+  const minutes = parseInt(match[2] || "0", 10);
 
   // If we have hours, return in HH.MM format
   if (hours > 0) {
-    return `${hours}.${String(minutes).padStart(2, '0')}`;
+    return `${hours}.${String(minutes).padStart(2, "0")}`;
   }
 
   // If only minutes, return as single number

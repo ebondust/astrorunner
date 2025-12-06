@@ -1,11 +1,19 @@
 import type { APIContext } from "astro";
 import { randomUUID } from "node:crypto";
 
-import { badRequest, internalServerError, notFound, forbidden, unauthorized, unprocessableEntity } from "../../../lib/api/errors.ts";
+import {
+  badRequest,
+  internalServerError,
+  notFound,
+  forbidden,
+  unauthorized,
+  unprocessableEntity,
+} from "../../../lib/api/errors.ts";
 import { deleteActivity, replaceActivity } from "../../../lib/services/activity.service.ts";
 import { mapEntityToDto } from "../../../lib/mappers/activity.mapper.ts";
 import { createActivityCommandSchema } from "../../../lib/validators.ts";
 import type { ActivityDto } from "../../../types.ts";
+import { logger } from "@/lib/utils/logger";
 
 // Disable prerendering for this API route (SSR required)
 export const prerender = false;
@@ -21,7 +29,7 @@ export async function PUT(context: APIContext): Promise<Response> {
     // Step 1: Get Supabase client from context.locals
     const supabase = context.locals.supabase;
     if (!supabase) {
-      console.error(`[${correlationId}] Supabase client not found in context.locals`);
+      logger.error("Supabase client not found in context.locals", { correlationId });
       return internalServerError(correlationId);
     }
 
@@ -108,11 +116,11 @@ export async function PUT(context: APIContext): Promise<Response> {
         }
 
         // Database errors
-        console.error(`[${correlationId}] Database error:`, error.message);
+        logger.error("Database error:", { correlationId, error: error.message });
         return internalServerError(correlationId);
       }
 
-      console.error(`[${correlationId}] Unexpected error:`, error);
+      logger.error("Unexpected error:", { correlationId, error });
       return internalServerError(correlationId);
     }
 
@@ -129,7 +137,7 @@ export async function PUT(context: APIContext): Promise<Response> {
     });
   } catch (error) {
     // Catch-all for unexpected errors
-    console.error(`[${correlationId}] Unexpected error in PUT /api/activities/[id]:`, error);
+    logger.error("Unexpected error in PUT /api/activities/[id]:", { correlationId, error });
     return internalServerError(correlationId);
   }
 }
@@ -145,7 +153,7 @@ export async function DELETE(context: APIContext): Promise<Response> {
     // Step 1: Get Supabase client from context.locals
     const supabase = context.locals.supabase;
     if (!supabase) {
-      console.error(`[${correlationId}] Supabase client not found in context.locals`);
+      logger.error("Supabase client not found in context.locals", { correlationId });
       return internalServerError(correlationId);
     }
 
@@ -183,11 +191,11 @@ export async function DELETE(context: APIContext): Promise<Response> {
       await deleteActivity(supabase, userId, activityId);
     } catch (error) {
       if (error instanceof Error) {
-        console.error(`[${correlationId}] Service error:`, error.message);
+        logger.error("Service error:", { correlationId, error: error.message });
         return internalServerError(correlationId);
       }
 
-      console.error(`[${correlationId}] Unexpected error:`, error);
+      logger.error("Unexpected error:", { correlationId, error });
       return internalServerError(correlationId);
     }
 
@@ -198,7 +206,7 @@ export async function DELETE(context: APIContext): Promise<Response> {
     });
   } catch (error) {
     // Catch-all for unexpected errors
-    console.error(`[${correlationId}] Unexpected error in DELETE /api/activities/[id]:`, error);
+    logger.error("Unexpected error in DELETE /api/activities/[id]:", { correlationId, error });
     return internalServerError(correlationId);
   }
 }

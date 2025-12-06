@@ -13,7 +13,13 @@
       "Bash(npm view:*)",
       "Bash(npm test:*)",
       "Bash(node -e:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(npx eslint:*)",
+      "Bash(npx supabase gen types:*)",
+      "Bash(src/db/database.types.new.ts)",
+      "Bash(python -c:*)",
+      "Bash(node -c:*)",
+      "Bash(git checkout:*)"
     ],
     "deny": [],
     "ask": []

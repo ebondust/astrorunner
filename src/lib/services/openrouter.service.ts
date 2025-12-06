@@ -9,6 +9,18 @@ import type {
   ResponseFormat,
 } from "./openrouter.types";
 import { OpenRouterAPIError, OpenRouterValidationError, OpenRouterTimeoutError } from "./openrouter.errors";
+import { logger } from "../utils/logger";
+
+// Type guard for AbortError
+function isAbortError(error: unknown): error is DOMException {
+  return error instanceof DOMException && error.name === "AbortError";
+}
+
+// Interface for parsed motivational message from API
+interface ParsedMotivationalMessage {
+  message: string;
+  tone?: string;
+}
 
 export class OpenRouterService {
   private readonly apiKey: string;
@@ -40,9 +52,9 @@ export class OpenRouterService {
     stats: ActivityStats,
     options?: GenerationOptions
   ): Promise<MotivationalMessage> {
-    console.log("[OpenRouter] Generating motivational message for user:", userId);
-    console.log("[OpenRouter] Activity stats:", stats);
-    console.log("[OpenRouter] Options:", options);
+    logger.debug("[OpenRouter] Generating motivational message for user:", { userId });
+    logger.debug("[OpenRouter] Activity stats:", { stats });
+    logger.debug("[OpenRouter] Options:", { options });
 
     // Validate input
     this.validateStats(stats);
@@ -51,12 +63,12 @@ export class OpenRouterService {
     if (!options?.bypassCache) {
       const cached = this.getFromCache(userId, stats);
       if (cached) {
-        console.log("[OpenRouter] Returning cached motivation");
+        logger.debug("[OpenRouter] Returning cached motivation");
         return cached;
       }
-      console.log("[OpenRouter] No cache found, will call API");
+      logger.debug("[OpenRouter] No cache found, will call API");
     } else {
-      console.log("[OpenRouter] Bypassing cache");
+      logger.debug("[OpenRouter] Bypassing cache");
     }
 
     // Build request
@@ -69,7 +81,7 @@ export class OpenRouterService {
     const temperature = options?.temperature ?? (options?.bypassCache ? 0.9 : 0.7);
 
     if (options?.bypassCache) {
-      console.log("[OpenRouter] Using increased temperature (0.9) and prompt variation for regeneration");
+      logger.debug("[OpenRouter] Using increased temperature (0.9) and prompt variation for regeneration");
     }
 
     const requestBody: OpenRouterRequest = {
@@ -84,7 +96,7 @@ export class OpenRouterService {
       top_p: 0.9,
     };
 
-    console.log("[OpenRouter] Request built successfully with temperature:", temperature);
+    logger.debug("[OpenRouter] Request built successfully with temperature:", { temperature });
 
     // Make request
     const response = await this.makeRequest("/chat/completions", requestBody);
@@ -92,7 +104,7 @@ export class OpenRouterService {
     // Parse response
     const message = this.parseResponse(response);
 
-    console.log("[OpenRouter] Final parsed message:", message);
+    logger.debug("[OpenRouter] Final parsed message:", { message });
 
     // Cache result
     this.saveToCache(userId, stats, message);
@@ -114,7 +126,7 @@ export class OpenRouterService {
       await this.makeRequest("/chat/completions", testRequest);
       return true;
     } catch (error) {
-      console.error("OpenRouter connection test failed:", error);
+      logger.error("OpenRouter connection test failed:", { error });
       return false;
     }
   }
@@ -141,10 +153,10 @@ export class OpenRouterService {
   // ============================================
 
   private async makeRequest(endpoint: string, body: OpenRouterRequest, attempt = 1): Promise<OpenRouterResponse> {
-    console.log("[OpenRouter] Making request (attempt", attempt, ")");
-    console.log("[OpenRouter] Endpoint:", `${this.baseUrl}${endpoint}`);
-    console.log("[OpenRouter] Model:", body.model);
-    console.log("[OpenRouter] Request body:", JSON.stringify(body, null, 2));
+    logger.debug("[OpenRouter] Making request (attempt:", { attempt });
+    logger.debug("[OpenRouter] Endpoint:", { endpoint: `${this.baseUrl}${endpoint}` });
+    logger.debug("[OpenRouter] Model:", { model: body.model });
+    logger.debug("[OpenRouter] Request body:", { body: JSON.stringify(body, null, 2) });
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), this.timeout);
@@ -164,19 +176,19 @@ export class OpenRouterService {
 
       clearTimeout(timeoutId);
 
-      console.log("[OpenRouter] Response status:", response.status, response.statusText);
+      logger.debug("[OpenRouter] Response status:", { status: response.status, statusText: response.statusText });
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({
           error: { message: response.statusText },
         }));
 
-        console.log("[OpenRouter] Error response:", errorData);
+        logger.debug("[OpenRouter] Error response:", { errorData });
 
         // Retry on rate limit or server error
         if ((response.status === 429 || response.status >= 500) && attempt < this.maxRetries) {
           const delay = Math.pow(2, attempt) * 1000;
-          console.log("[OpenRouter] Retrying after", delay, "ms");
+          logger.debug("[OpenRouter] Retrying after:", { delay: `${delay}ms` });
           await this.delay(delay);
           return this.makeRequest(endpoint, body, attempt + 1);
         }
@@ -185,19 +197,19 @@ export class OpenRouterService {
       }
 
       const responseData = await response.json();
-      console.log("[OpenRouter] Success response:", JSON.stringify(responseData, null, 2));
+      logger.debug("[OpenRouter] Success response:", { responseData: JSON.stringify(responseData, null, 2) });
       return responseData;
     } catch (error) {
       clearTimeout(timeoutId);
 
       // Retry on network errors or timeouts
-      if ((error instanceof TypeError || (error as any).name === "AbortError") && attempt < this.maxRetries) {
+      if ((error instanceof TypeError || isAbortError(error)) && attempt < this.maxRetries) {
         const delay = Math.pow(2, attempt) * 1000;
         await this.delay(delay);
         return this.makeRequest(endpoint, body, attempt + 1);
       }
 
-      if ((error as any).name === "AbortError") {
+      if (isAbortError(error)) {
         throw new OpenRouterTimeoutError("Request timeout");
       }
 
@@ -385,46 +397,46 @@ Choose tone based on activity level:
   }
 
   private parseResponse(response: OpenRouterResponse): MotivationalMessage {
-    console.log("[OpenRouter] Parsing response...");
+    logger.debug("[OpenRouter] Parsing response...");
     const choice = response.choices?.[0];
 
     if (!choice || !choice.message || !choice.message.content) {
-      console.error("[OpenRouter] Invalid response structure:", response);
+      logger.error("[OpenRouter] Invalid response structure:", { response });
       throw new OpenRouterValidationError("Invalid response structure from API");
     }
 
-    console.log("[OpenRouter] Raw content from API:", choice.message.content);
+    logger.debug("[OpenRouter] Raw content from API:", { content: choice.message.content });
 
-    let parsed: any;
+    let parsed: ParsedMotivationalMessage;
     const content = choice.message.content;
 
     try {
-      parsed = JSON.parse(content);
-      console.log("[OpenRouter] Parsed JSON:", parsed);
+      parsed = JSON.parse(content) as ParsedMotivationalMessage;
+      logger.debug("[OpenRouter] Parsed JSON:", { parsed });
     } catch (error) {
-      console.error("[OpenRouter] Failed to parse JSON directly:", error);
+      logger.error("[OpenRouter] Failed to parse JSON directly:", { error });
 
       // Try to extract JSON from markdown code blocks or surrounding text
       const jsonMatch = content.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/) || content.match(/(\{[\s\S]*?\})/);
 
       if (jsonMatch && jsonMatch[1]) {
-        console.log("[OpenRouter] Attempting to extract JSON from text:", jsonMatch[1]);
+        logger.debug("[OpenRouter] Attempting to extract JSON from text:", { extractedJson: jsonMatch[1] });
         try {
-          parsed = JSON.parse(jsonMatch[1]);
-          console.log("[OpenRouter] Successfully extracted JSON:", parsed);
+          parsed = JSON.parse(jsonMatch[1]) as ParsedMotivationalMessage;
+          logger.debug("[OpenRouter] Successfully extracted JSON:", { parsed });
         } catch (extractError) {
-          console.error("[OpenRouter] Failed to extract JSON:", extractError);
-          console.error("[OpenRouter] Original content was:", content);
+          logger.error("[OpenRouter] Failed to extract JSON:", { extractError });
+          logger.error("[OpenRouter] Original content was:", { content });
           throw new OpenRouterValidationError("Failed to parse JSON response from API");
         }
       } else {
-        console.error("[OpenRouter] No JSON found in content:", content);
+        logger.error("[OpenRouter] No JSON found in content:", { content });
         throw new OpenRouterValidationError("Failed to parse JSON response from API");
       }
     }
 
     if (!parsed.message || typeof parsed.message !== "string") {
-      console.error("[OpenRouter] Missing or invalid message field:", parsed);
+      logger.error("[OpenRouter] Missing or invalid message field:", { parsed });
       throw new OpenRouterValidationError("Response missing required field: message");
     }
 
@@ -434,7 +446,7 @@ Choose tone based on activity level:
     if (parsed.tone && ["encouraging", "celebratory", "challenging"].includes(parsed.tone)) {
       tone = parsed.tone;
     } else {
-      console.warn("[OpenRouter] Missing or invalid tone field, using default:", parsed.tone);
+      logger.warn("[OpenRouter] Missing or invalid tone field, using default:", { tone: parsed.tone });
       // Smart default based on message content
       const msg = parsed.message.toLowerCase();
       if (msg.includes("amazing") || msg.includes("incredible") || msg.includes("crushing")) {
@@ -442,7 +454,7 @@ Choose tone based on activity level:
       } else if (msg.includes("let's") || msg.includes("aim") || msg.includes("try")) {
         tone = "challenging";
       }
-      console.log("[OpenRouter] Applied smart default tone:", tone);
+      logger.debug("[OpenRouter] Applied smart default tone:", { tone });
     }
 
     const result = {
@@ -453,7 +465,7 @@ Choose tone based on activity level:
       cached: false,
     };
 
-    console.log("[OpenRouter] Successfully parsed message:", result);
+    logger.debug("[OpenRouter] Successfully parsed message:", { result });
     return result;
   }
 }

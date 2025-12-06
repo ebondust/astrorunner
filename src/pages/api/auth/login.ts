@@ -3,6 +3,7 @@ import type { APIRoute } from "astro";
 import { createSupabaseServerInstance } from "@/db/supabase.client";
 import { badRequest, unauthorized } from "@/lib/api/errors";
 import { loginCommandSchema } from "@/lib/validators";
+import { logger } from "@/lib/utils/logger";
 
 /**
  * Disable prerendering for this API route (enable SSR)
@@ -28,12 +29,12 @@ export const prerender = false;
  * Error Codes: 400, 401, 500
  */
 export const POST: APIRoute = async ({ request, cookies }) => {
-  console.log('[Login API] POST /api/auth/login - Request received');
+  logger.debug("POST /api/auth/login - Request received");
 
   // Validate Content-Type
   const contentType = request.headers.get("content-type");
   if (!contentType?.includes("application/json")) {
-    console.log('[Login API] Invalid Content-Type:', contentType);
+    logger.debug("Invalid Content-Type:", { contentType });
     return badRequest("Content-Type must be application/json");
   }
 
@@ -41,23 +42,23 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   let requestBody: unknown;
   try {
     requestBody = await request.json();
-    console.log('[Login API] Request body parsed successfully');
+    logger.debug("Request body parsed successfully");
   } catch {
-    console.log('[Login API] Failed to parse JSON body');
+    logger.debug("Failed to parse JSON body");
     return badRequest("Invalid JSON in request body");
   }
 
   // Validate input with Zod
   const validationResult = loginCommandSchema.safeParse(requestBody);
   if (!validationResult.success) {
-    console.log('[Login API] Validation failed:', validationResult.error.errors);
+    logger.debug("Validation failed:", { errors: validationResult.error.errors });
     return badRequest("Invalid input", {
       validationErrors: validationResult.error.errors,
     });
   }
 
   const { email, password } = validationResult.data;
-  console.log('[Login API] Attempting login for email:', email);
+  logger.debug("Attempting login for email:", { email });
 
   // Create Supabase SSR client
   const supabase = createSupabaseServerInstance({
@@ -73,11 +74,11 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
   // Handle authentication errors with generic message for security
   if (error || !data.user) {
-    console.log('[Login API] Authentication failed:', error?.message || 'No user returned');
+    logger.debug("Authentication failed:", { error: error?.message || "No user returned" });
     return unauthorized("Invalid credentials");
   }
 
-  console.log('[Login API] Login successful for user:', data.user.id);
+  logger.debug("Login successful for user:", { userId: data.user.id });
 
   // Return user data on success
   return new Response(

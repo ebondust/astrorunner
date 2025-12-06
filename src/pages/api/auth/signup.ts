@@ -3,6 +3,7 @@ import type { APIRoute } from "astro";
 import { createSupabaseServerInstance } from "@/db/supabase.client";
 import { badRequest, internalServerError } from "@/lib/api/errors";
 import { signupCommandSchema } from "@/lib/validators";
+import { logger } from "@/lib/utils/logger";
 
 /**
  * Disable prerendering for this API route (enable SSR)
@@ -84,14 +85,14 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
     // Log error for debugging
     const correlationId = crypto.randomUUID();
-    console.error(`[${correlationId}] Signup error:`, error);
+    logger.error("Signup error:", { correlationId, error });
 
     return internalServerError(correlationId);
   }
 
   if (!data.user) {
     const correlationId = crypto.randomUUID();
-    console.error(`[${correlationId}] Signup succeeded but no user returned`);
+    logger.error("Signup succeeded but no user returned", { correlationId });
     return internalServerError(correlationId);
   }
 

@@ -1,7 +1,7 @@
 import type { APIRoute } from "astro";
 
 import { createSupabaseServerInstance } from "@/db/supabase.client";
-import { internalServerError } from "@/lib/api/errors";
+import { logger } from "@/lib/utils/logger";
 
 /**
  * Disable prerendering for this API route (enable SSR)
@@ -29,7 +29,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   // Log error but still return success (idempotent)
   if (error) {
     const correlationId = crypto.randomUUID();
-    console.warn(`[${correlationId}] Logout error (continuing anyway):`, error);
+    logger.warn("Logout error (continuing anyway):", { correlationId, error });
   }
 
   // Return 204 No Content on success

@@ -1,24 +1,13 @@
 import { useEffect } from "react";
 import type { ActivityDto, CreateActivityCommand, ReplaceActivityCommand } from "@/types";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useActivityForm } from "./hooks/useActivityForm";
 import { durationInputToISO8601, kmToMeters } from "@/lib/utils/date";
+import { logger } from "@/lib/utils/logger";
 
 interface ActivityFormModalProps {
   open: boolean;
@@ -31,21 +20,8 @@ interface ActivityFormModalProps {
 /**
  * Modal form for creating and editing activities
  */
-export function ActivityFormModal({
-  open,
-  mode,
-  activity,
-  onSubmit,
-  onCancel,
-}: ActivityFormModalProps) {
-  const {
-    formState,
-    errors,
-    setField,
-    validate,
-    reset,
-    initializeFromActivity,
-  } = useActivityForm();
+export function ActivityFormModal({ open, mode, activity, onSubmit, onCancel }: ActivityFormModalProps) {
+  const { formState, errors, setField, validate, reset, initializeFromActivity } = useActivityForm();
 
   // Initialize form when modal opens
   useEffect(() => {
@@ -78,7 +54,7 @@ export function ActivityFormModal({
       await onSubmit(command);
       reset();
     } catch (error) {
-      console.error("Error submitting form:", error);
+      logger.error("Error submitting form:", { error });
     }
   };
 
@@ -112,9 +88,7 @@ export function ActivityFormModal({
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleCancel()}>
       <DialogContent data-testid="activity-form-modal" className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>
-            {mode === "create" ? "Add Activity" : "Edit Activity"}
-          </DialogTitle>
+          <DialogTitle>{mode === "create" ? "Add Activity" : "Edit Activity"}</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit}>
@@ -147,7 +121,7 @@ export function ActivityFormModal({
               </Label>
               <Select
                 value={formState.activityType}
-                onValueChange={(value) => setField("activityType", value as any)}
+                onValueChange={(value) => setField("activityType", value as "Run" | "Walk" | "Mixed")}
               >
                 <SelectTrigger
                   id="activityType"
@@ -206,18 +180,11 @@ export function ActivityFormModal({
                 min="0"
                 placeholder="Optional"
                 value={formState.distanceMeters ?? ""}
-                onChange={(e) =>
-                  setField(
-                    "distanceMeters",
-                    e.target.value ? parseFloat(e.target.value) : undefined
-                  )
-                }
+                onChange={(e) => setField("distanceMeters", e.target.value ? parseFloat(e.target.value) : undefined)}
                 aria-invalid={!!errors.distanceMeters}
                 aria-describedby={errors.distanceMeters ? "distanceMeters-error" : undefined}
               />
-              <p className="text-xs text-muted-foreground">
-                Max 2 decimal places (e.g., 5.25 km)
-              </p>
+              <p className="text-xs text-muted-foreground">Max 2 decimal places (e.g., 5.25 km)</p>
               {errors.distanceMeters && (
                 <p id="distanceMeters-error" data-testid="distance-error-message" className="text-sm text-destructive">
                   {errors.distanceMeters}
@@ -228,7 +195,9 @@ export function ActivityFormModal({
             {/* Form-level error */}
             {errors.form && (
               <div className="rounded-lg border border-destructive bg-destructive/10 p-3">
-                <p data-testid="form-error-message" className="text-sm text-destructive">{errors.form}</p>
+                <p data-testid="form-error-message" className="text-sm text-destructive">
+                  {errors.form}
+                </p>
               </div>
             )}
           </div>

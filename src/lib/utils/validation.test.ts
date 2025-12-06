@@ -243,9 +243,7 @@ describe("validation.ts - Duration Validation", () => {
       const result = validateDuration(duration);
 
       // Assert
-      expect(result).toBe(
-        "Duration must be in HH.MM (e.g., 1.30), HH:MM (e.g., 1:30), or minutes (e.g., 90) format"
-      );
+      expect(result).toBe("Duration must be in HH.MM (e.g., 1.30), HH:MM (e.g., 1:30), or minutes (e.g., 90) format");
     });
 
     it("should return error for single digit minutes in HH:MM format", () => {
@@ -256,9 +254,7 @@ describe("validation.ts - Duration Validation", () => {
       const result = validateDuration(duration);
 
       // Assert
-      expect(result).toBe(
-        "Duration must be in HH.MM (e.g., 1.30), HH:MM (e.g., 1:30), or minutes (e.g., 90) format"
-      );
+      expect(result).toBe("Duration must be in HH.MM (e.g., 1.30), HH:MM (e.g., 1:30), or minutes (e.g., 90) format");
     });
 
     it("should accept valid edge case: 23:59", () => {
@@ -626,9 +622,11 @@ describe("validation.ts - Form Validation", () => {
 
     it("should return activity type error for invalid type", () => {
       // Arrange
+
       const formState: ActivityFormState = {
         activityDate: "2025-11-25T10:30:45Z",
         duration: "1:30",
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Testing with intentionally invalid type
         activityType: "" as any,
       };
 
@@ -662,9 +660,11 @@ describe("validation.ts - Form Validation", () => {
 
     it("should return multiple errors for multiple invalid fields", () => {
       // Arrange
+
       const formState: ActivityFormState = {
         activityDate: "",
         duration: "0:00",
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Testing with intentionally invalid type
         activityType: "" as any,
         distanceMeters: -10,
       };
@@ -681,9 +681,11 @@ describe("validation.ts - Form Validation", () => {
 
     it("should validate all fields independently", () => {
       // Arrange
+
       const formState: ActivityFormState = {
         activityDate: "2025-02-30T10:30:45Z", // Invalid date
         duration: "1:60", // Invalid minutes
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Testing with intentionally invalid type
         activityType: "Swim" as any, // Invalid type
         distanceMeters: 5.123, // Too many decimals
       };

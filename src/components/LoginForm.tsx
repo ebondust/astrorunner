@@ -77,9 +77,7 @@ export function LoginForm({ onSubmit }: LoginFormProps) {
     <Card>
       <CardHeader>
         <CardTitle>Sign In</CardTitle>
-        <CardDescription>
-          Enter your email and password to access your account
-        </CardDescription>
+        <CardDescription>Enter your email and password to access your account</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -119,11 +117,7 @@ export function LoginForm({ onSubmit }: LoginFormProps) {
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                 aria-label={showPassword ? "Hide password" : "Show password"}
               >
-                {showPassword ? (
-                  <EyeOff className="h-4 w-4" />
-                ) : (
-                  <Eye className="h-4 w-4" />
-                )}
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
           </div>
@@ -143,19 +137,13 @@ export function LoginForm({ onSubmit }: LoginFormProps) {
           {/* Links */}
           <div className="space-y-2 text-center text-sm">
             <div>
-              <a
-                href="/auth/reset-password"
-                className="text-primary hover:underline"
-              >
+              <a href="/auth/reset-password" className="text-primary hover:underline">
                 Forgot your password?
               </a>
             </div>
             <div className="text-muted-foreground">
-              Don't have an account?{" "}
-              <a
-                href="/auth/register"
-                className="text-primary hover:underline"
-              >
+              Don&apos;t have an account?{" "}
+              <a href="/auth/register" className="text-primary hover:underline">
                 Sign up
               </a>
             </div>

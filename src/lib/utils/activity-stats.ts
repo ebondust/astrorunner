@@ -1,6 +1,5 @@
-import type { SupabaseClient } from '../../db/supabase.client';
-import type { ActivityStats } from '../services/openrouter.types';
-import type { ActivityEntity } from '../../types';
+import type { SupabaseClient } from "../../db/supabase.client";
+import type { ActivityStats } from "../services/openrouter.types";
 
 /**
  * Aggregate activity statistics for a given month
@@ -9,7 +8,7 @@ export async function aggregateActivityStats(
   supabase: SupabaseClient,
   userId: string,
   date: Date,
-  distanceUnit: 'km' | 'mi' = 'km'
+  distanceUnit: "km" | "mi" = "km"
 ): Promise<ActivityStats> {
   const year = date.getFullYear();
   const month = date.getMonth() + 1; // 1-12
@@ -19,18 +18,16 @@ export async function aggregateActivityStats(
   const lastDay = new Date(year, month, 0);
   const totalDays = lastDay.getDate();
   const today = new Date();
-  const daysElapsed = today.getMonth() === month - 1 && today.getFullYear() === year
-    ? today.getDate()
-    : totalDays;
+  const daysElapsed = today.getMonth() === month - 1 && today.getFullYear() === year ? today.getDate() : totalDays;
   const daysRemaining = totalDays - daysElapsed;
 
   // Fetch activities for the month
   const { data: activities, error } = await supabase
-    .from('activities')
-    .select('*')
-    .eq('user_id', userId)
-    .gte('activity_date', firstDay.toISOString())
-    .lte('activity_date', lastDay.toISOString());
+    .from("activities")
+    .select("*")
+    .eq("user_id", userId)
+    .gte("activity_date", firstDay.toISOString())
+    .lte("activity_date", lastDay.toISOString());
 
   if (error) {
     throw new Error(`Failed to fetch activities: ${error.message}`);
@@ -45,9 +42,9 @@ export async function aggregateActivityStats(
 
   for (const activity of activities || []) {
     // Count by type
-    if (activity.activity_type === 'Run') runCount++;
-    else if (activity.activity_type === 'Walk') walkCount++;
-    else if (activity.activity_type === 'Mixed') mixedCount++;
+    if (activity.activity_type === "Run") runCount++;
+    else if (activity.activity_type === "Walk") walkCount++;
+    else if (activity.activity_type === "Mixed") mixedCount++;
 
     // Sum distance
     if (activity.distance != null) {
@@ -81,7 +78,7 @@ export async function aggregateActivityStats(
  * Parse PostgreSQL interval to total seconds
  */
 function parseIntervalToSeconds(interval: unknown): number {
-  if (typeof interval !== 'string') return 0;
+  if (typeof interval !== "string") return 0;
 
   // Handle HH:MM:SS format
   const timeMatch = interval.match(/^(\d+):(\d+):(\d+)$/);
@@ -95,9 +92,9 @@ function parseIntervalToSeconds(interval: unknown): number {
   // Handle ISO-8601 duration (PT1H30M15S)
   const isoMatch = interval.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
   if (isoMatch) {
-    const hours = parseInt(isoMatch[1] || '0', 10);
-    const minutes = parseInt(isoMatch[2] || '0', 10);
-    const seconds = parseInt(isoMatch[3] || '0', 10);
+    const hours = parseInt(isoMatch[1] || "0", 10);
+    const minutes = parseInt(isoMatch[2] || "0", 10);
+    const seconds = parseInt(isoMatch[3] || "0", 10);
     return hours * 3600 + minutes * 60 + seconds;
   }
 
@@ -126,10 +123,10 @@ function secondsToISODuration(totalSeconds: number): string {
   const minutes = Math.floor((totalSeconds % 3600) / 60);
   const seconds = totalSeconds % 60;
 
-  let duration = 'PT';
+  let duration = "PT";
   if (hours > 0) duration += `${hours}H`;
   if (minutes > 0) duration += `${minutes}M`;
   if (seconds > 0) duration += `${seconds}S`;
 
-  return duration === 'PT' ? 'PT0S' : duration;
+  return duration === "PT" ? "PT0S" : duration;
 }

@@ -1,5 +1,5 @@
-import { test as teardown } from '@playwright/test';
-import { cleanupTestData, getTestUserId } from './helpers/database';
+import { test as teardown } from "@playwright/test";
+import { cleanupTestData, getTestUserId } from "./helpers/database";
 
 /**
  * Global Teardown for E2E Tests
@@ -11,17 +11,17 @@ import { cleanupTestData, getTestUserId } from './helpers/database';
  * See: https://playwright.dev/docs/test-global-setup-teardown
  */
 
-teardown('cleanup activities database', async () => {
+teardown("cleanup activities database", async () => {
   const userId = getTestUserId();
 
-  console.log('🧹 Global teardown: Cleaning up test data...');
+  console.log("🧹 Global teardown: Cleaning up test data...");
   console.log(`   Test User ID: ${userId}`);
 
   try {
     await cleanupTestData(userId);
-    console.log('✅ Test data cleaned up successfully');
+    console.log("✅ Test data cleaned up successfully");
   } catch (error) {
-    console.error('❌ Failed to cleanup test data:', error);
+    console.error("❌ Failed to cleanup test data:", error);
     throw error;
   }
 });

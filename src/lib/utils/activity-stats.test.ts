@@ -2,6 +2,10 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import type { SupabaseClient } from "../../db/supabase.client";
 import type { ActivityEntity } from "../../types";
 import { aggregateActivityStats } from "./activity-stats";
+import type { Mock } from "vitest";
+
+// Type for the mocked lte method that returns data
+type MockLteMethod = Mock<unknown[], Promise<{ data: Partial<ActivityEntity>[] | null; error: unknown | null }>>;
 
 // Mock Supabase client
 const createMockSupabaseClient = () => {
@@ -60,7 +64,7 @@ describe("activity-stats.ts - Activity Statistics Aggregation", () => {
         },
       ];
 
-      (mockSupabase.lte as any).mockResolvedValue({
+      (mockSupabase.lte as MockLteMethod).mockResolvedValue({
         data: mockActivities,
         error: null,
       });
@@ -89,7 +93,7 @@ describe("activity-stats.ts - Activity Statistics Aggregation", () => {
       const userId = "user1";
       const date = new Date("2025-11-15T10:00:00Z");
 
-      (mockSupabase.lte as any).mockResolvedValue({
+      (mockSupabase.lte as MockLteMethod).mockResolvedValue({
         data: [],
         error: null,
       });
@@ -112,7 +116,7 @@ describe("activity-stats.ts - Activity Statistics Aggregation", () => {
       const userId = "user1";
       const date = new Date("2025-11-15T10:00:00Z");
 
-      (mockSupabase.lte as any).mockResolvedValue({
+      (mockSupabase.lte as MockLteMethod).mockResolvedValue({
         data: null,
         error: null,
       });
@@ -154,7 +158,7 @@ describe("activity-stats.ts - Activity Statistics Aggregation", () => {
         },
       ];
 
-      (mockSupabase.lte as any).mockResolvedValue({
+      (mockSupabase.lte as MockLteMethod).mockResolvedValue({
         data: mockActivities,
         error: null,
       });
@@ -185,7 +189,7 @@ describe("activity-stats.ts - Activity Statistics Aggregation", () => {
         },
       ];
 
-      (mockSupabase.lte as any).mockResolvedValue({
+      (mockSupabase.lte as MockLteMethod).mockResolvedValue({
         data: mockActivities,
         error: null,
       });
@@ -214,7 +218,7 @@ describe("activity-stats.ts - Activity Statistics Aggregation", () => {
         },
       ];
 
-      (mockSupabase.lte as any).mockResolvedValue({
+      (mockSupabase.lte as MockLteMethod).mockResolvedValue({
         data: mockActivities,
         error: null,
       });
@@ -243,7 +247,7 @@ describe("activity-stats.ts - Activity Statistics Aggregation", () => {
         },
       ];
 
-      (mockSupabase.lte as any).mockResolvedValue({
+      (mockSupabase.lte as MockLteMethod).mockResolvedValue({
         data: mockActivities,
         error: null,
       });
@@ -272,7 +276,7 @@ describe("activity-stats.ts - Activity Statistics Aggregation", () => {
         },
       ];
 
-      (mockSupabase.lte as any).mockResolvedValue({
+      (mockSupabase.lte as MockLteMethod).mockResolvedValue({
         data: mockActivities,
         error: null,
       });
@@ -290,15 +294,15 @@ describe("activity-stats.ts - Activity Statistics Aggregation", () => {
       const userId = "user1";
       const date = new Date("2025-11-15T10:00:00Z");
 
-      (mockSupabase.lte as any).mockResolvedValue({
+      (mockSupabase.lte as MockLteMethod).mockResolvedValue({
         data: null,
         error: { message: "Database connection failed" },
       });
 
       // Act & Assert
-      await expect(
-        aggregateActivityStats(mockSupabase, userId, date, "km")
-      ).rejects.toThrow("Failed to fetch activities: Database connection failed");
+      await expect(aggregateActivityStats(mockSupabase, userId, date, "km")).rejects.toThrow(
+        "Failed to fetch activities: Database connection failed"
+      );
     });
 
     it("should handle February in non-leap year", async () => {
@@ -307,7 +311,7 @@ describe("activity-stats.ts - Activity Statistics Aggregation", () => {
       const userId = "user1";
       const date = new Date("2025-02-15T10:00:00Z");
 
-      (mockSupabase.lte as any).mockResolvedValue({
+      (mockSupabase.lte as MockLteMethod).mockResolvedValue({
         data: [],
         error: null,
       });
@@ -328,7 +332,7 @@ describe("activity-stats.ts - Activity Statistics Aggregation", () => {
       const userId = "user1";
       const date = new Date("2024-02-15T10:00:00Z");
 
-      (mockSupabase.lte as any).mockResolvedValue({
+      (mockSupabase.lte as MockLteMethod).mockResolvedValue({
         data: [],
         error: null,
       });
@@ -349,7 +353,7 @@ describe("activity-stats.ts - Activity Statistics Aggregation", () => {
       const userId = "user1";
       const date = new Date("2025-11-15T10:00:00Z");
 
-      (mockSupabase.lte as any).mockResolvedValue({
+      (mockSupabase.lte as MockLteMethod).mockResolvedValue({
         data: [],
         error: null,
       });
@@ -368,7 +372,7 @@ describe("activity-stats.ts - Activity Statistics Aggregation", () => {
       const userId = "user1";
       const date = new Date("2025-10-15T10:00:00Z"); // October
 
-      (mockSupabase.lte as any).mockResolvedValue({
+      (mockSupabase.lte as MockLteMethod).mockResolvedValue({
         data: [],
         error: null,
       });
@@ -399,7 +403,7 @@ describe("activity-stats.ts - Activity Statistics Aggregation", () => {
         },
       ];
 
-      (mockSupabase.lte as any).mockResolvedValue({
+      (mockSupabase.lte as MockLteMethod).mockResolvedValue({
         data: mockActivities,
         error: null,
       });
@@ -429,7 +433,7 @@ describe("activity-stats.ts - Activity Statistics Aggregation", () => {
         },
       ];
 
-      (mockSupabase.lte as any).mockResolvedValue({
+      (mockSupabase.lte as MockLteMethod).mockResolvedValue({
         data: mockActivities,
         error: null,
       });
@@ -458,7 +462,7 @@ describe("activity-stats.ts - Activity Statistics Aggregation", () => {
         },
       ];
 
-      (mockSupabase.lte as any).mockResolvedValue({
+      (mockSupabase.lte as MockLteMethod).mockResolvedValue({
         data: mockActivities,
         error: null,
       });
@@ -495,7 +499,7 @@ describe("activity-stats.ts - Activity Statistics Aggregation", () => {
         },
       ];
 
-      (mockSupabase.lte as any).mockResolvedValue({
+      (mockSupabase.lte as MockLteMethod).mockResolvedValue({
         data: mockActivities,
         error: null,
       });
@@ -526,7 +530,7 @@ describe("activity-stats.ts - Activity Statistics Aggregation", () => {
         },
       ];
 
-      (mockSupabase.lte as any).mockResolvedValue({
+      (mockSupabase.lte as MockLteMethod).mockResolvedValue({
         data: mockActivities,
         error: null,
       });
@@ -549,13 +553,13 @@ describe("activity-stats.ts - Activity Statistics Aggregation", () => {
           activity_id: "1",
           user_id: userId,
           activity_date: "2025-11-05T10:00:00Z",
-          duration: null as any,
+          duration: null,
           activity_type: "Run",
           distance: null,
         },
       ];
 
-      (mockSupabase.lte as any).mockResolvedValue({
+      (mockSupabase.lte as MockLteMethod).mockResolvedValue({
         data: mockActivities,
         error: null,
       });

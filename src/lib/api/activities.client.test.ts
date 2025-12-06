@@ -642,9 +642,7 @@ describe("activities.client.ts", () => {
         });
 
         // Act & Assert
-        await expect(deleteActivity(activityId)).rejects.toThrow(
-          "You do not have permission to delete this activity"
-        );
+        await expect(deleteActivity(activityId)).rejects.toThrow("You do not have permission to delete this activity");
       });
 
       it("should throw error for other HTTP errors", async () => {

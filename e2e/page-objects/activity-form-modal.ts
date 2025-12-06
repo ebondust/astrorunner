@@ -1,4 +1,4 @@
-import type { Page, Locator } from '@playwright/test';
+import type { Page, Locator } from "@playwright/test";
 
 /**
  * Page Object Model for the Activity Form Modal
@@ -22,18 +22,18 @@ export class ActivityFormModal {
 
   constructor(page: Page) {
     this.page = page;
-    this.modal = page.getByTestId('activity-form-modal');
-    this.dateTimeInput = page.getByTestId('activity-date-input');
-    this.typeSelect = page.getByTestId('activity-type-select');
-    this.durationInput = page.getByTestId('duration-input');
-    this.distanceInput = page.getByTestId('distance-input');
-    this.submitButton = page.getByTestId('submit-activity-button');
-    this.cancelButton = page.getByTestId('cancel-button');
-    this.formErrorMessage = page.getByTestId('form-error-message');
-    this.dateErrorMessage = page.getByTestId('date-error-message');
-    this.typeErrorMessage = page.getByTestId('type-error-message');
-    this.durationErrorMessage = page.getByTestId('duration-error-message');
-    this.distanceErrorMessage = page.getByTestId('distance-error-message');
+    this.modal = page.getByTestId("activity-form-modal");
+    this.dateTimeInput = page.getByTestId("activity-date-input");
+    this.typeSelect = page.getByTestId("activity-type-select");
+    this.durationInput = page.getByTestId("duration-input");
+    this.distanceInput = page.getByTestId("distance-input");
+    this.submitButton = page.getByTestId("submit-activity-button");
+    this.cancelButton = page.getByTestId("cancel-button");
+    this.formErrorMessage = page.getByTestId("form-error-message");
+    this.dateErrorMessage = page.getByTestId("date-error-message");
+    this.typeErrorMessage = page.getByTestId("type-error-message");
+    this.durationErrorMessage = page.getByTestId("duration-error-message");
+    this.distanceErrorMessage = page.getByTestId("distance-error-message");
   }
 
   /**
@@ -41,13 +41,13 @@ export class ActivityFormModal {
    */
   async fillActivityForm(data: {
     dateTime: string; // Format: YYYY-MM-DDTHH:mm
-    type: 'Run' | 'Walk' | 'Mixed';
+    type: "Run" | "Walk" | "Mixed";
     duration: string; // Format: 1.30 or 90
     distance?: string; // Distance in km
   }) {
     await this.dateTimeInput.fill(data.dateTime);
     await this.typeSelect.click();
-    await this.page.getByRole('option', { name: data.type }).click();
+    await this.page.getByRole("option", { name: data.type }).click();
     await this.durationInput.fill(data.duration);
 
     if (data.distance) {
@@ -80,7 +80,7 @@ export class ActivityFormModal {
    * Wait for the modal to be hidden
    */
   async waitForHidden() {
-    await this.modal.waitFor({ state: 'hidden' });
+    await this.modal.waitFor({ state: "hidden" });
   }
 
   /**

@@ -104,11 +104,15 @@ describe("useActivities", () => {
       });
 
       // Assert - Check query parameters
-      // The hook uses getMonthRange which works with local timezone
-      // Note: In CET (GMT+1), Nov 1st midnight becomes Oct 31st 11 PM UTC
+      // Calculate expected dates based on local timezone conversion to UTC
+      const startOfMonth = new Date(2025, 10, 1); // Nov 1st 00:00 local time
+      const endOfMonth = new Date(2025, 11, 0, 23, 59, 59, 999); // Nov 30th 23:59:59.999 local time
+      const expectedFrom = startOfMonth.toISOString().split("T")[0];
+      const expectedTo = endOfMonth.toISOString().split("T")[0];
+
       const callArgs = vi.mocked(activitiesApi.fetchActivities).mock.calls[0][0];
-      expect(callArgs.from).toBe("2025-10-31"); // Start of month in UTC
-      expect(callArgs.to).toBe("2025-11-30"); // End of month
+      expect(callArgs.from).toBe(expectedFrom); // Start of month converted to UTC
+      expect(callArgs.to).toBe(expectedTo); // End of month converted to UTC
       expect(callArgs.sort).toBe("activityDate");
       expect(callArgs.order).toBe("desc");
       expect(callArgs.limit).toBe(100);
@@ -116,12 +120,9 @@ describe("useActivities", () => {
 
     it("should refetch activities when selectedMonth changes", async () => {
       // Arrange
-      const { rerender } = renderHook(
-        ({ selectedMonth }) => useActivities({ selectedMonth }),
-        {
-          initialProps: { selectedMonth: new Date("2025-11-01T00:00:00Z") },
-        }
-      );
+      const { rerender } = renderHook(({ selectedMonth }) => useActivities({ selectedMonth }), {
+        initialProps: { selectedMonth: new Date("2025-11-01T00:00:00Z") },
+      });
 
       vi.mocked(activitiesApi.fetchActivities).mockResolvedValue({
         items: [],
@@ -280,15 +281,17 @@ describe("useActivities", () => {
 
       // Complete the API call
       await act(async () => {
-        resolveCreate!({
-          activityId: "act-real",
-          userId: "user-1",
-          activityDate: "2025-11-26T10:00:00Z",
-          duration: "PT45M",
-          activityType: "Run",
-          distanceMeters: 5000,
-        });
-        await createPromise;
+        if (resolveCreate) {
+          resolveCreate({
+            activityId: "act-real",
+            userId: "user-1",
+            activityDate: "2025-11-26T10:00:00Z",
+            duration: "PT45M",
+            activityType: "Run",
+            distanceMeters: 5000,
+          });
+          await createPromise;
+        }
       });
 
       // Assert - Temp should be replaced with real

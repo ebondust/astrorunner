@@ -461,9 +461,7 @@ describe("validators.ts", () => {
         const distance = -100;
 
         // Act & Assert
-        expect(() => validateDistance(distance)).toThrow(
-          "Distance must be greater than or equal to 0"
-        );
+        expect(() => validateDistance(distance)).toThrow("Distance must be greater than or equal to 0");
       });
 
       it("should throw error for NaN", () => {

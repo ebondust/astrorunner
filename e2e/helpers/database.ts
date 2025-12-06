@@ -1,5 +1,5 @@
-import { createClient } from '@supabase/supabase-js';
-import type { Database } from '../../src/db/database.types';
+import { createClient } from "@supabase/supabase-js";
+import type { Database } from "../../src/db/database.types";
 
 /**
  * Database helpers for E2E tests
@@ -9,9 +9,9 @@ import type { Database } from '../../src/db/database.types';
  */
 
 // Get E2E test user credentials from environment
-export const E2E_USER_ID = process.env.E2E_USERNAME_ID!;
-export const E2E_USERNAME = process.env.E2E_USERNAME!;
-export const E2E_PASSWORD = process.env.E2E_PASSWORD!;
+export const E2E_USER_ID = process.env.E2E_USERNAME_ID ?? "";
+export const E2E_USERNAME = process.env.E2E_USERNAME ?? "";
+export const E2E_PASSWORD = process.env.E2E_PASSWORD ?? "";
 
 /**
  * Create Supabase client for E2E tests
@@ -22,7 +22,7 @@ export function createE2ESupabaseClient() {
   const supabaseKey = process.env.SUPABASE_KEY;
 
   if (!supabaseUrl || !supabaseKey) {
-    throw new Error('Missing Supabase credentials in environment');
+    throw new Error("Missing Supabase credentials in environment");
   }
 
   return createClient<Database>(supabaseUrl, supabaseKey, {
@@ -59,7 +59,7 @@ async function createAuthenticatedE2EClient() {
  */
 export function getTestUserId(): string {
   if (!E2E_USER_ID) {
-    throw new Error('E2E_USERNAME_ID not configured in .env.test');
+    throw new Error("E2E_USERNAME_ID not configured in .env.test");
   }
   return E2E_USER_ID;
 }
@@ -73,10 +73,7 @@ export async function cleanupTestData(userId: string = E2E_USER_ID) {
   const supabase = await createAuthenticatedE2EClient();
 
   // Delete all activities for the test user
-  const { error } = await supabase
-    .from('activities')
-    .delete()
-    .eq('user_id', userId);
+  const { error } = await supabase.from("activities").delete().eq("user_id", userId);
 
   if (error) {
     throw new Error(`Failed to cleanup test data: ${error.message}`);
@@ -94,7 +91,7 @@ export async function seedActivity(
   userId: string,
   activityData: {
     date: string; // ISO-8601 format
-    type: 'Run' | 'Walk' | 'Mixed';
+    type: "Run" | "Walk" | "Mixed";
     duration: string; // PostgreSQL interval format (e.g., 'PT45M')
     distance?: number; // Distance in meters
   }
@@ -102,7 +99,7 @@ export async function seedActivity(
   const supabase = await createAuthenticatedE2EClient();
 
   const { data, error } = await supabase
-    .from('activities')
+    .from("activities")
     .insert({
       user_id: userId,
       activity_date: activityData.date,
@@ -128,12 +125,12 @@ export async function seedActivity(
  */
 export async function seedActivities(
   userId: string,
-  activities: Array<{
+  activities: {
     date: string;
-    type: 'Run' | 'Walk' | 'Mixed';
+    type: "Run" | "Walk" | "Mixed";
     duration: string;
     distance?: number;
-  }>
+  }[]
 ) {
   const supabase = await createAuthenticatedE2EClient();
 
@@ -145,10 +142,7 @@ export async function seedActivities(
     distance: activity.distance || null,
   }));
 
-  const { data, error } = await supabase
-    .from('activities')
-    .insert(insertData)
-    .select();
+  const { data, error } = await supabase.from("activities").insert(insertData).select();
 
   if (error) {
     await supabase.auth.signOut();
@@ -167,10 +161,10 @@ export async function getActivitiesForUser(userId: string) {
   const supabase = await createAuthenticatedE2EClient();
 
   const { data, error } = await supabase
-    .from('activities')
-    .select('*')
-    .eq('user_id', userId)
-    .order('activity_date', { ascending: false });
+    .from("activities")
+    .select("*")
+    .eq("user_id", userId)
+    .order("activity_date", { ascending: false });
 
   if (error) {
     await supabase.auth.signOut();
