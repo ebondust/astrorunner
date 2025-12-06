@@ -82,7 +82,12 @@ test.describe("User Story 2: Create New Activity", () => {
     await expect(newCard.getByTestId("activity-distance")).toContainText("12.00 km");
 
     // Assert: Activity persists after refresh
+    // Wait for both the reload and the GET API call to complete
+    const getActivitiesPromise = page.waitForResponse(
+      (response) => response.url().includes("/api/activities") && response.request().method() === "GET"
+    );
     await page.reload();
+    await getActivitiesPromise;
     await activitiesPage.waitForActivitiesToLoad();
 
     const persistedCards = await activitiesPage.getActivityCards();
@@ -140,7 +145,12 @@ test.describe("User Story 2: Create New Activity", () => {
     await expect(newCard.getByTestId("activity-distance")).toContainText("—");
 
     // Assert: Activity persists after refresh
+    // Wait for both the reload and the GET API call to complete
+    const getActivitiesPromise = page.waitForResponse(
+      (response) => response.url().includes("/api/activities") && response.request().method() === "GET"
+    );
     await page.reload();
+    await getActivitiesPromise;
     await activitiesPage.waitForActivitiesToLoad();
 
     const persistedCards = await activitiesPage.getActivityCards();
@@ -178,7 +188,12 @@ test.describe("User Story 2: Create New Activity", () => {
     expect(cardCount).toBe(0);
 
     // Assert: Verify no activity was created by refreshing
+    // Wait for both the reload and the GET API call to complete
+    const getActivitiesPromise = page.waitForResponse(
+      (response) => response.url().includes("/api/activities") && response.request().method() === "GET"
+    );
     await page.reload();
+    await getActivitiesPromise;
     await activitiesPage.waitForActivitiesToLoad();
     expect(await activitiesPage.isEmptyStateVisible()).toBe(true);
   });
