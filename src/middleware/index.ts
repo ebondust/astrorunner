@@ -1,6 +1,7 @@
 import { defineMiddleware } from "astro:middleware";
 
 import { createSupabaseServerInstance } from "@/db/supabase.client";
+import type { RuntimeEnv } from "../env";
 
 // Public paths that don't require authentication
 const PUBLIC_PATHS = [
@@ -17,15 +18,22 @@ const PUBLIC_PATHS = [
   "/api/auth/reset-password",
 ];
 
-export const onRequest = defineMiddleware(async ({ locals, cookies, url, request, redirect }, next) => {
+export const onRequest = defineMiddleware(async (context, next) => {
+  const { locals, cookies, url, request, redirect } = context;
+
   // Check if current path is public
   const isPublicPath = PUBLIC_PATHS.some((path) => url.pathname === path || url.pathname.startsWith(path));
 
+  // Get runtime environment from Cloudflare (if available)
+  // The Cloudflare adapter injects runtime into locals
+  const runtimeEnv = (locals as { runtime?: { env: RuntimeEnv } }).runtime?.env;
+
   // Create SSR-compatible Supabase client for all requests
-  // This ensures we use the current environment variables
+  // Pass runtime env for Cloudflare compatibility
   const supabaseSSR = createSupabaseServerInstance({
     cookies,
     headers: request.headers,
+    runtimeEnv,
   });
 
   // For public paths, set client and skip auth check
