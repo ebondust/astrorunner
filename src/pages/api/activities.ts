@@ -1,5 +1,4 @@
 import type { APIContext } from "astro";
-import { randomUUID } from "node:crypto";
 
 import { badRequest, internalServerError, unprocessableEntity, unauthorized } from "../../lib/api/errors.ts";
 import { mapEntityToDto } from "../../lib/mappers/activity.mapper.ts";
@@ -16,7 +15,7 @@ export const prerender = false;
  * Fetches activities for the authenticated user with optional filtering
  */
 export async function GET(context: APIContext): Promise<Response> {
-  const correlationId = randomUUID();
+  const correlationId = crypto.randomUUID();
 
   try {
     // Get Supabase client from context.locals
@@ -111,7 +110,7 @@ export async function GET(context: APIContext): Promise<Response> {
  * Creates a new activity entry
  */
 export async function POST(context: APIContext): Promise<Response> {
-  const correlationId = randomUUID();
+  const correlationId = crypto.randomUUID();
 
   try {
     // Step 1: Get Supabase client from context.locals
