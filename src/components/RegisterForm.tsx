@@ -47,6 +47,21 @@ export function RegisterForm({ onSubmit }: RegisterFormProps) {
         return;
       }
 
+      if (!/[a-z]/.test(password)) {
+        setError("Password must contain at least one lowercase letter");
+        return;
+      }
+
+      if (!/[A-Z]/.test(password)) {
+        setError("Password must contain at least one uppercase letter");
+        return;
+      }
+
+      if (!/[0-9]/.test(password)) {
+        setError("Password must contain at least one number");
+        return;
+      }
+
       if (password !== confirmPassword) {
         setError("Passwords do not match");
         return;
@@ -55,9 +70,36 @@ export function RegisterForm({ onSubmit }: RegisterFormProps) {
       setIsSubmitting(true);
 
       try {
-        // Call the onSubmit callback if provided
+        // Call the onSubmit callback if provided, otherwise use default API call
         if (onSubmit) {
           await onSubmit(email, password);
+        } else {
+          // Default: Call signup API endpoint
+          const response = await fetch("/api/auth/signup", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ email, password }),
+          });
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            if (response.status === 409) {
+              throw new Error("An account with this email already exists");
+            }
+            // Extract validation error messages if available
+            if (errorData.error?.details?.validationErrors) {
+              const validationMessages = errorData.error.details.validationErrors
+                .map((err: { message: string }) => err.message)
+                .join(". ");
+              throw new Error(validationMessages || "Validation failed");
+            }
+            throw new Error(errorData.error?.message || errorData.message || "Registration failed");
+          }
+
+          // Redirect to activities page on success
+          window.location.href = "/activities";
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : "An error occurred");
@@ -116,7 +158,9 @@ export function RegisterForm({ onSubmit }: RegisterFormProps) {
                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
-            <p className="text-xs text-muted-foreground">Must be at least 8 characters long</p>
+            <p className="text-xs text-muted-foreground">
+              Must be at least 8 characters with uppercase, lowercase, and number
+            </p>
           </div>
 
           {/* Confirm Password Field */}

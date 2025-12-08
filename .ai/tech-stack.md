@@ -35,5 +35,5 @@
 
 ## CI/CD and Hosting
 
-- **GitHub Actions** for building CI/CD pipelines.  
-- **DigitalOcean** for hosting the application via a **Docker image**.  
+- **GitHub Actions** for building CI/CD pipelines.
+- **Cloudflare Pages** for hosting the application with edge deployment.  
