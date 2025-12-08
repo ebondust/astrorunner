@@ -1,5 +1,4 @@
 import type { APIContext } from "astro";
-import { randomUUID } from "node:crypto";
 
 import {
   badRequest,
@@ -23,7 +22,7 @@ export const prerender = false;
  * Replaces (updates) a specific activity
  */
 export async function PUT(context: APIContext): Promise<Response> {
-  const correlationId = randomUUID();
+  const correlationId = crypto.randomUUID();
 
   try {
     // Step 1: Get Supabase client from context.locals
@@ -147,7 +146,7 @@ export async function PUT(context: APIContext): Promise<Response> {
  * Deletes a specific activity
  */
 export async function DELETE(context: APIContext): Promise<Response> {
-  const correlationId = randomUUID();
+  const correlationId = crypto.randomUUID();
 
   try {
     // Step 1: Get Supabase client from context.locals
