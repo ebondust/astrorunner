@@ -49,7 +49,7 @@ The application follows a **mobile-first** and **minimalist design** approach, e
 
 ### CI/CD and Hosting
 - **GitHub Actions** - CI/CD pipeline automation
-- **DigitalOcean** - Application hosting via Docker containers
+- **Cloudflare Pages** - Application hosting with edge deployment
 
 ## 🚀 Getting Started Locally
 

@@ -51,9 +51,10 @@ This document provides comprehensive guidance for AI assistants (like Claude) wo
 
 ### Backend
 
-- **Astro SSR** - Server-side rendering with Node adapter
+- **Astro SSR** - Server-side rendering with Cloudflare adapter (Node adapter for local dev)
 - **Supabase** - Backend-as-a-Service (PostgreSQL + Auth)
 - **OpenRouter** - AI service for motivational messages
+- **Cloudflare Pages** - Edge deployment and hosting
 
 ### Development Tools
 

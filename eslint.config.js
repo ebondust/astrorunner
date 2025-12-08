@@ -57,7 +57,7 @@ const reactConfig = tseslint.config({
 });
 
 const nodeScriptsConfig = tseslint.config({
-  files: ["scripts/**/*.js", "e2e/**/*.ts"],
+  files: ["scripts/**/*.js", "e2e/**/*.ts", "astro.config.mjs"],
   languageOptions: {
     globals: {
       process: true,
