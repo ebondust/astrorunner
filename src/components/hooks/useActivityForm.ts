@@ -59,8 +59,12 @@ export function useActivityForm(): UseActivityFormReturn {
 
   // Initialize form from existing activity (for edit mode)
   const initializeFromActivity = useCallback((activity: ActivityDto) => {
+    // Normalize the date to ISO-8601 UTC with Z suffix
+    // Supabase may return dates with +00:00 offset instead of Z
+    const normalizedDate = new Date(activity.activityDate).toISOString();
+
     setFormState({
-      activityDate: activity.activityDate,
+      activityDate: normalizedDate,
       duration: iso8601ToDurationInput(activity.duration), // Convert PT1H30M to 1.30
       activityType: activity.activityType,
       distanceMeters: activity.distanceMeters ? metersToKm(activity.distanceMeters) : undefined, // Convert meters to km
