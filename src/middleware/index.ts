@@ -1,7 +1,6 @@
 import { defineMiddleware } from "astro:middleware";
 
 import { createSupabaseServerInstance } from "@/db/supabase.client";
-import type { RuntimeEnv } from "../env";
 
 // Public paths that don't require authentication
 const PUBLIC_PATHS = [
@@ -25,8 +24,21 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const isPublicPath = PUBLIC_PATHS.some((path) => url.pathname === path || url.pathname.startsWith(path));
 
   // Get runtime environment from Cloudflare (if available)
-  // The Cloudflare adapter injects runtime into locals
-  const runtimeEnv = (locals as { runtime?: { env: RuntimeEnv } }).runtime?.env;
+  // With @astrojs/cloudflare, runtime is injected directly into locals
+  // Access via locals.runtime.env for Cloudflare, fallback handled in getEnv()
+  const runtimeEnv = locals.runtime?.env;
+
+  // Debug logging - remove after fixing the issue
+  if (url.pathname.includes("/auth/") || url.pathname.includes("/api/auth/")) {
+    console.log("[Middleware Debug]", {
+      path: url.pathname,
+      hasRuntime: !!locals.runtime,
+      hasRuntimeEnv: !!runtimeEnv,
+      runtimeKeys: runtimeEnv ? Object.keys(runtimeEnv) : [],
+      hasSupabaseUrl: !!runtimeEnv?.SUPABASE_URL,
+      importMetaEnvKeys: Object.keys(import.meta.env).filter((k) => k.startsWith("SUPABASE") || k.startsWith("PUBLIC")),
+    });
+  }
 
   // Create SSR-compatible Supabase client for all requests
   // Pass runtime env for Cloudflare compatibility

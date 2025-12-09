@@ -1,12 +1,12 @@
 import type { AstroCookies } from "astro";
-import { createClient } from "@supabase/supabase-js";
+import type { SupabaseClient as SupabaseClientBase } from "@supabase/supabase-js";
 import { createServerClient, type CookieOptionsWithName } from "@supabase/ssr";
 
 import type { Database } from "./database.types";
-import type { RuntimeEnv } from "../env";
+import type { RuntimeEnv } from "../env.d";
 
 // Export SupabaseClient type for use throughout the application
-export type SupabaseClient = ReturnType<typeof createClient<Database>>;
+export type SupabaseClient = SupabaseClientBase<Database>;
 
 // Cookie options for SSR authentication
 export const cookieOptions: CookieOptionsWithName = {

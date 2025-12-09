@@ -13,17 +13,16 @@ export interface RuntimeEnv {
   ENABLE_AI_MOTIVATION?: string;
 }
 
+// Cloudflare Runtime type from @astrojs/cloudflare
+type CloudflareRuntime = import("@astrojs/cloudflare").Runtime<RuntimeEnv>;
+
 declare global {
   namespace App {
-    interface Locals {
+    interface Locals extends CloudflareRuntime {
       supabase: SupabaseClient;
       user?: {
         id: string;
         email: string;
-      };
-      // Runtime environment (from Cloudflare or import.meta.env)
-      runtime?: {
-        env: RuntimeEnv;
       };
     }
   }

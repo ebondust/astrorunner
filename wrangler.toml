@@ -1,0 +1,13 @@
+# Wrangler configuration for Cloudflare Pages deployment
+# This file is required for @astrojs/cloudflare to properly inject runtime environment
+
+name = "astrorunner"
+compatibility_date = "2024-12-01"
+
+# Note: Environment variables are configured in Cloudflare Pages dashboard
+# They will be automatically available via Astro.locals.runtime.env
+# Do NOT add secrets here - use Cloudflare Pages dashboard for SUPABASE_URL, SUPABASE_KEY, etc.
+
+[vars]
+# Runtime environment variables can be defined here for local development
+# Production values should be set in Cloudflare Pages dashboard

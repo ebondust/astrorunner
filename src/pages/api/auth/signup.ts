@@ -1,6 +1,5 @@
 import type { APIRoute } from "astro";
 
-import { createSupabaseServerInstance } from "@/db/supabase.client";
 import { badRequest, internalServerError } from "@/lib/api/errors";
 import { signupCommandSchema } from "@/lib/validators";
 import { logger } from "@/lib/utils/logger";
@@ -28,7 +27,7 @@ export const prerender = false;
  *
  * Error Codes: 400, 409 (email exists), 500
  */
-export const POST: APIRoute = async ({ request, cookies }) => {
+export const POST: APIRoute = async ({ request, locals }) => {
   // Validate Content-Type
   const contentType = request.headers.get("content-type");
   if (!contentType?.includes("application/json")) {
@@ -53,11 +52,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
   const { email, password } = validationResult.data;
 
-  // Create Supabase SSR client
-  const supabase = createSupabaseServerInstance({
-    cookies,
-    headers: request.headers,
-  });
+  // Use Supabase client from middleware (properly configured with runtime env)
+  const supabase = locals.supabase;
 
   // Attempt signup with Supabase Auth
   const { data, error } = await supabase.auth.signUp({

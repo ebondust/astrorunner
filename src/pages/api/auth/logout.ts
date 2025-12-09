@@ -1,6 +1,5 @@
 import type { APIRoute } from "astro";
 
-import { createSupabaseServerInstance } from "@/db/supabase.client";
 import { logger } from "@/lib/utils/logger";
 
 /**
@@ -16,12 +15,9 @@ export const prerender = false;
  *
  * Note: Always returns success even if already logged out (idempotent)
  */
-export const POST: APIRoute = async ({ request, cookies }) => {
-  // Create Supabase SSR client
-  const supabase = createSupabaseServerInstance({
-    cookies,
-    headers: request.headers,
-  });
+export const POST: APIRoute = async ({ locals }) => {
+  // Use Supabase client from middleware (properly configured with runtime env)
+  const supabase = locals.supabase;
 
   // Attempt to sign out
   const { error } = await supabase.auth.signOut();
