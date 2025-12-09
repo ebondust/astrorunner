@@ -16,7 +16,7 @@ export const test = base.extend({
 
   page: async ({ page }, use) => {
     // Navigate to login page
-    await page.goto("/login");
+    await page.goto("/auth/login");
 
     // Wait for React to hydrate the form
     await page.waitForLoadState("networkidle");

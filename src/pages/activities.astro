@@ -10,10 +10,14 @@ import {
   aggregateActivityStats,
 } from "@/lib/services";
 import type { MotivationalMessage } from "@/lib/services";
+import type { RuntimeEnv } from "@/env";
 import { logger } from "@/lib/utils/logger";
 
 // Disable prerendering for this page (SSR)
 export const prerender = false;
+
+// Get runtime environment from Cloudflare (if available)
+const runtimeEnv = (Astro.locals as { runtime?: { env: RuntimeEnv } }).runtime?.env;
 
 // Get authenticated user from middleware
 const authenticatedUser = Astro.locals.user;
@@ -50,7 +54,7 @@ const currentYear = now.getFullYear();
 // Generate motivation only for current month and if feature is enabled
 let motivation: MotivationalMessage | null = null;
 let initialMotivationError: string | null = null;
-const aiMotivationEnabled = isAIMotivationEnabled();
+const aiMotivationEnabled = isAIMotivationEnabled(runtimeEnv);
 
 logger.debug("[Activities Page] AI Motivation enabled:", { aiMotivationEnabled });
 
@@ -65,7 +69,7 @@ if (aiMotivationEnabled) {
     logger.debug("[Activities Page] Stats aggregated:", { stats });
 
     // Generate AI motivation
-    const service = getOpenRouterService();
+    const service = getOpenRouterService(runtimeEnv);
     logger.debug("[Activities Page] OpenRouter service initialized:", { serviceInitialized: !!service });
 
     if (service) {

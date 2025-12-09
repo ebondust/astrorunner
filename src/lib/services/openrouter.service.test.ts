@@ -501,7 +501,7 @@ describe("OpenRouterService", () => {
         await expect(service.generateMotivationalMessage(userId, mockStats)).rejects.toThrow("Invalid API key");
       });
 
-      it("should retry on 429 rate limit and eventually succeed", async () => {
+      it("should fail fast on 429 rate limit and try fallback model", async () => {
         // Arrange
         const userId = "user-429";
         (global.fetch as MockFetch)
@@ -517,16 +517,13 @@ describe("OpenRouterService", () => {
             json: async () => mockApiResponse,
           });
 
-        // Act
-        const promise = service.generateMotivationalMessage(userId, mockStats);
-
-        // Advance timers to trigger retry
-        await vi.runAllTimersAsync();
-        const result = await promise;
+        // Act - 429 errors fail fast (no retry) to allow model fallback
+        const result = await service.generateMotivationalMessage(userId, mockStats);
 
         // Assert
         expect(result.message).toBe("Great progress this month! Keep up the excellent work.");
-        expect(global.fetch).toHaveBeenCalledTimes(2); // Initial + 1 retry
+        // Primary model fails with 429 (no retry), fallback model succeeds
+        expect(global.fetch).toHaveBeenCalledTimes(2);
       });
 
       it("should retry on 500 server error and eventually succeed", async () => {
@@ -578,7 +575,10 @@ describe("OpenRouterService", () => {
         // Assert
         expect(error).toBeDefined();
         expect(error.message).toBe("Persistent server error");
-        expect(global.fetch).toHaveBeenCalledTimes(3); // Initial + 2 retries (maxRetries=3 means 3 total attempts)
+        // With model fallback: primary model tries then fallback model tries
+        // Each model: 1 initial + (maxRetries-1) retries = 3 attempts (maxRetries=3 in test setup)
+        // Total: 3 attempts × 2 models = 6 calls
+        expect(global.fetch).toHaveBeenCalledTimes(6);
       });
 
       it("should handle timeout and retry", async () => {

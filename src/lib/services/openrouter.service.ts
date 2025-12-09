@@ -22,10 +22,15 @@ interface ParsedMotivationalMessage {
   tone?: string;
 }
 
+// Model configuration with primary and fallback options
+const PRIMARY_MODEL = "tngtech/deepseek-r1t2-chimera:free";
+const FALLBACK_MODEL = "meta-llama/llama-3.3-70b-instruct:free";
+
 export class OpenRouterService {
   private readonly apiKey: string;
   private readonly baseUrl: string;
   private readonly defaultModel: string;
+  private readonly fallbackModel: string;
   private readonly timeout: number;
   private readonly maxRetries: number;
   private readonly cacheTTL: number;
@@ -38,9 +43,10 @@ export class OpenRouterService {
 
     this.apiKey = config.apiKey;
     this.baseUrl = config.baseUrl ?? "https://openrouter.ai/api/v1";
-    this.defaultModel = config.model ?? "meta-llama/llama-3.3-70b-instruct:free";
+    this.defaultModel = config.model ?? PRIMARY_MODEL;
+    this.fallbackModel = FALLBACK_MODEL;
     this.timeout = config.timeout ?? 30000;
-    this.maxRetries = config.maxRetries ?? 3;
+    this.maxRetries = config.maxRetries ?? 2; // Reduced from 3 to fail faster
     this.cacheTTL = config.cacheTTL ?? 15 * 60 * 1000; // 15 minutes default
   }
 
@@ -84,32 +90,55 @@ export class OpenRouterService {
       logger.debug("[OpenRouter] Using increased temperature (0.9) and prompt variation for regeneration");
     }
 
-    const requestBody: OpenRouterRequest = {
-      model: options?.model ?? this.defaultModel,
-      messages: [
-        { role: "system", content: systemMessage },
-        { role: "user", content: userMessage },
-      ],
-      response_format: responseFormat,
-      max_tokens: options?.maxTokens ?? 100,
-      temperature,
-      top_p: 0.9,
-    };
+    const primaryModel = options?.model ?? this.defaultModel;
+    const modelsToTry = [primaryModel];
 
-    logger.debug("[OpenRouter] Request built successfully with temperature:", { temperature });
+    // Add fallback model if not already using it
+    if (primaryModel !== this.fallbackModel) {
+      modelsToTry.push(this.fallbackModel);
+    }
 
-    // Make request
-    const response = await this.makeRequest("/chat/completions", requestBody);
+    let lastError: Error | null = null;
 
-    // Parse response
-    const message = this.parseResponse(response);
+    for (const model of modelsToTry) {
+      const requestBody: OpenRouterRequest = {
+        model,
+        messages: [
+          { role: "system", content: systemMessage },
+          { role: "user", content: userMessage },
+        ],
+        response_format: responseFormat,
+        max_tokens: options?.maxTokens ?? 100,
+        temperature,
+        top_p: 0.9,
+      };
 
-    logger.debug("[OpenRouter] Final parsed message:", { message });
+      logger.debug("[OpenRouter] Trying model:", { model });
+      logger.debug("[OpenRouter] Request built successfully with temperature:", { temperature });
 
-    // Cache result
-    this.saveToCache(userId, stats, message);
+      try {
+        // Make request
+        const response = await this.makeRequest("/chat/completions", requestBody);
 
-    return message;
+        // Parse response
+        const message = this.parseResponse(response);
+
+        logger.debug("[OpenRouter] Final parsed message:", { message });
+
+        // Cache result
+        this.saveToCache(userId, stats, message);
+
+        return message;
+      } catch (error) {
+        lastError = error instanceof Error ? error : new Error(String(error));
+        logger.warn("[OpenRouter] Model failed, trying next:", { model, error: lastError.message });
+
+        // Continue to next model
+      }
+    }
+
+    // All models failed
+    throw lastError ?? new Error("All models failed");
   }
 
   /**
@@ -185,12 +214,17 @@ export class OpenRouterService {
 
         logger.debug("[OpenRouter] Error response:", { errorData });
 
-        // Retry on rate limit or server error
-        if ((response.status === 429 || response.status >= 500) && attempt < this.maxRetries) {
+        // Retry on server errors (not rate limits - let model fallback handle those)
+        if (response.status >= 500 && attempt < this.maxRetries) {
           const delay = Math.pow(2, attempt) * 1000;
           logger.debug("[OpenRouter] Retrying after:", { delay: `${delay}ms` });
           await this.delay(delay);
           return this.makeRequest(endpoint, body, attempt + 1);
+        }
+
+        // For rate limits (429), fail fast and let model fallback handle it
+        if (response.status === 429) {
+          logger.warn("[OpenRouter] Rate limited, failing fast to try fallback model");
         }
 
         throw new OpenRouterAPIError(errorData.error?.message || response.statusText, response.status);
