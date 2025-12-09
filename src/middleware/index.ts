@@ -17,15 +17,35 @@ const PUBLIC_PATHS = [
   "/api/auth/reset-password",
 ];
 
-export const onRequest = defineMiddleware(async ({ locals, cookies, url, request, redirect }, next) => {
+export const onRequest = defineMiddleware(async (context, next) => {
+  const { locals, cookies, url, request, redirect } = context;
+
   // Check if current path is public
   const isPublicPath = PUBLIC_PATHS.some((path) => url.pathname === path || url.pathname.startsWith(path));
 
+  // Get runtime environment from Cloudflare (if available)
+  // With @astrojs/cloudflare, runtime is injected directly into locals
+  // Access via locals.runtime.env for Cloudflare, fallback handled in getEnv()
+  const runtimeEnv = locals.runtime?.env;
+
+  // Debug logging - remove after fixing the issue
+  if (url.pathname.includes("/auth/") || url.pathname.includes("/api/auth/")) {
+    console.log("[Middleware Debug]", {
+      path: url.pathname,
+      hasRuntime: !!locals.runtime,
+      hasRuntimeEnv: !!runtimeEnv,
+      runtimeKeys: runtimeEnv ? Object.keys(runtimeEnv) : [],
+      hasSupabaseUrl: !!runtimeEnv?.SUPABASE_URL,
+      importMetaEnvKeys: Object.keys(import.meta.env).filter((k) => k.startsWith("SUPABASE") || k.startsWith("PUBLIC")),
+    });
+  }
+
   // Create SSR-compatible Supabase client for all requests
-  // This ensures we use the current environment variables
+  // Pass runtime env for Cloudflare compatibility
   const supabaseSSR = createSupabaseServerInstance({
     cookies,
     headers: request.headers,
+    runtimeEnv,
   });
 
   // For public paths, set client and skip auth check

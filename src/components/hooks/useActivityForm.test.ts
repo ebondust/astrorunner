@@ -319,11 +319,34 @@ describe("useActivityForm", () => {
         result.current.initializeFromActivity(activity);
       });
 
-      // Assert
-      expect(result.current.formState.activityDate).toBe("2025-11-20T14:30:00Z");
+      // Assert - Date is normalized to ISO-8601 with milliseconds via toISOString()
+      expect(result.current.formState.activityDate).toBe("2025-11-20T14:30:00.000Z");
       expect(result.current.formState.duration).toBe("1.30"); // Converted from PT1H30M
       expect(result.current.formState.activityType).toBe("Walk");
       expect(result.current.formState.distanceMeters).toBe(7.5); // Converted from meters to km
+    });
+
+    it("should normalize date with timezone offset to Z suffix", () => {
+      // Arrange
+      const { result } = renderHook(() => useActivityForm());
+
+      // Supabase returns dates with +00:00 offset instead of Z
+      const activity: ActivityDto = {
+        activityId: "act-123",
+        userId: "user-1",
+        activityDate: "2025-11-20T14:30:00+00:00",
+        duration: "PT1H",
+        activityType: "Run",
+        distanceMeters: 5000,
+      };
+
+      // Act
+      act(() => {
+        result.current.initializeFromActivity(activity);
+      });
+
+      // Assert - Should be normalized to ISO-8601 with Z suffix
+      expect(result.current.formState.activityDate).toBe("2025-11-20T14:30:00.000Z");
     });
 
     it("should handle activity without distance", () => {

@@ -6,13 +6,17 @@ import {
   aggregateActivityStats,
 } from "@/lib/services";
 import type { MotivationalMessage } from "@/lib/services";
+import type { RuntimeEnv } from "@/env";
 import { logger } from "@/lib/utils/logger";
 
 export const prerender = false;
 
 export const POST: APIRoute = async ({ request, locals }) => {
+  // Get runtime environment from Cloudflare (if available)
+  const runtimeEnv = (locals as { runtime?: { env: RuntimeEnv } }).runtime?.env;
+
   // Check if feature is enabled
-  if (!isAIMotivationEnabled()) {
+  if (!isAIMotivationEnabled(runtimeEnv)) {
     return new Response(JSON.stringify({ error: "AI motivation feature is disabled" }), {
       status: 403,
       headers: { "Content-Type": "application/json" },
@@ -40,7 +44,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     // Generate motivation
     let motivation: MotivationalMessage;
     let error: string | null = null;
-    const service = getOpenRouterService();
+    const service = getOpenRouterService(runtimeEnv);
 
     if (service) {
       try {

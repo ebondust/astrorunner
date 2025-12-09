@@ -2,9 +2,23 @@
 
 import type { SupabaseClient } from "./db/supabase.client.ts";
 
+// Cloudflare runtime environment variables
+export interface RuntimeEnv {
+  SUPABASE_URL: string;
+  SUPABASE_KEY: string;
+  SUPABASE_SERVICE_ROLE_KEY?: string;
+  OPENROUTER_API_KEY?: string;
+  OPENROUTER_MODEL?: string;
+  OPENROUTER_CACHE_TTL?: string;
+  ENABLE_AI_MOTIVATION?: string;
+}
+
+// Cloudflare Runtime type from @astrojs/cloudflare
+type CloudflareRuntime = import("@astrojs/cloudflare").Runtime<RuntimeEnv>;
+
 declare global {
   namespace App {
-    interface Locals {
+    interface Locals extends CloudflareRuntime {
       supabase: SupabaseClient;
       user?: {
         id: string;
@@ -18,8 +32,10 @@ interface ImportMetaEnv {
   readonly SUPABASE_URL: string;
   readonly SUPABASE_KEY: string;
   readonly SUPABASE_SERVICE_ROLE_KEY?: string;
-  readonly OPENROUTER_API_KEY: string;
-  // more env variables...
+  readonly OPENROUTER_API_KEY?: string;
+  readonly OPENROUTER_MODEL?: string;
+  readonly OPENROUTER_CACHE_TTL?: string;
+  readonly ENABLE_AI_MOTIVATION?: string;
 }
 
 interface ImportMeta {

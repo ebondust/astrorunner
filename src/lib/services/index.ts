@@ -1,28 +1,35 @@
 import { OpenRouterService } from "./openrouter.service";
 import { logger } from "../utils/logger";
+import type { RuntimeEnv } from "../../env";
+import { getEnv } from "../../db/supabase.client";
 
 /**
  * Singleton instance of OpenRouter service
  * Initialized with environment variables
  */
 let openRouterServiceInstance: OpenRouterService | null = null;
+let lastEnvKey: string | null = null;
 
 /**
  * Get or create OpenRouter service instance
  * Returns null if API key is not configured
+ * @param runtimeEnv - Optional runtime environment (from Cloudflare)
  */
-export function getOpenRouterService(): OpenRouterService | null {
-  // Return existing instance if already created
-  if (openRouterServiceInstance) {
+export function getOpenRouterService(runtimeEnv?: RuntimeEnv): OpenRouterService | null {
+  const env = getEnv(runtimeEnv);
+  const apiKey = env.OPENROUTER_API_KEY;
+  const hasApiKey = apiKey && apiKey.trim().length > 0;
+
+  // Create a cache key based on API key to handle env changes
+  const envKey = apiKey ? apiKey.substring(0, 10) : "none";
+
+  // Return existing instance if already created with same config
+  if (openRouterServiceInstance && lastEnvKey === envKey) {
     logger.debug("[OpenRouter Init] Returning existing service instance");
     return openRouterServiceInstance;
   }
 
   logger.debug("[OpenRouter Init] Initializing new service instance");
-
-  // Check if API key is configured
-  const apiKey = import.meta.env.OPENROUTER_API_KEY;
-  const hasApiKey = apiKey && apiKey.trim().length > 0;
   logger.debug("[OpenRouter Init] API key configured:", { hasApiKey });
 
   if (!hasApiKey) {
@@ -34,8 +41,8 @@ export function getOpenRouterService(): OpenRouterService | null {
 
   // Create new instance
   try {
-    const model = import.meta.env.OPENROUTER_MODEL;
-    const cacheTTL = import.meta.env.OPENROUTER_CACHE_TTL ? parseInt(import.meta.env.OPENROUTER_CACHE_TTL) : undefined;
+    const model = env.OPENROUTER_MODEL;
+    const cacheTTL = env.OPENROUTER_CACHE_TTL ? parseInt(env.OPENROUTER_CACHE_TTL) : undefined;
 
     logger.debug("[OpenRouter Init] Model:", { model: model || "default (meta-llama/llama-3.3-70b-instruct:free)" });
     logger.debug("[OpenRouter Init] Cache TTL:", { cacheTTL: cacheTTL || "900000 (15 min)" });
@@ -46,6 +53,7 @@ export function getOpenRouterService(): OpenRouterService | null {
       cacheTTL: cacheTTL,
     });
 
+    lastEnvKey = envKey;
     logger.debug("[OpenRouter Init] Service initialized successfully");
     return openRouterServiceInstance;
   } catch (error) {
@@ -56,15 +64,18 @@ export function getOpenRouterService(): OpenRouterService | null {
 
 /**
  * Check if AI motivation feature is enabled
+ * @param runtimeEnv - Optional runtime environment (from Cloudflare)
  */
-export function isAIMotivationEnabled(): boolean {
+export function isAIMotivationEnabled(runtimeEnv?: RuntimeEnv): boolean {
+  const env = getEnv(runtimeEnv);
+
   // Check feature flag (defaults to true if not set)
-  if (import.meta.env.ENABLE_AI_MOTIVATION === "false") {
+  if (env.ENABLE_AI_MOTIVATION === "false") {
     return false;
   }
 
   // Check if service can be initialized
-  return getOpenRouterService() !== null;
+  return getOpenRouterService(runtimeEnv) !== null;
 }
 
 // Re-export types and errors for convenience

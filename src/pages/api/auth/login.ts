@@ -1,6 +1,5 @@
 import type { APIRoute } from "astro";
 
-import { createSupabaseServerInstance } from "@/db/supabase.client";
 import { badRequest, unauthorized } from "@/lib/api/errors";
 import { loginCommandSchema } from "@/lib/validators";
 import { logger } from "@/lib/utils/logger";
@@ -28,7 +27,7 @@ export const prerender = false;
  *
  * Error Codes: 400, 401, 500
  */
-export const POST: APIRoute = async ({ request, cookies }) => {
+export const POST: APIRoute = async ({ request, locals }) => {
   logger.debug("POST /api/auth/login - Request received");
 
   // Validate Content-Type
@@ -60,11 +59,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   const { email, password } = validationResult.data;
   logger.debug("Attempting login for email:", { email });
 
-  // Create Supabase SSR client
-  const supabase = createSupabaseServerInstance({
-    cookies,
-    headers: request.headers,
-  });
+  // Use Supabase client from middleware (properly configured with runtime env)
+  const supabase = locals.supabase;
 
   // Attempt login with Supabase Auth
   const { data, error } = await supabase.auth.signInWithPassword({
