@@ -1,4 +1,5 @@
 import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Sparkles, RefreshCw, AlertTriangle } from "lucide-react";
 import type { MotivationalMessage } from "@/lib/services";
@@ -6,6 +7,7 @@ import type { MotivationalMessage } from "@/lib/services";
 interface MotivationBannerProps {
   motivation: MotivationalMessage | null;
   onRegenerate?: () => void;
+  isLoading?: boolean;
   isRegenerating?: boolean;
   error?: string | null;
 }
@@ -13,9 +15,27 @@ interface MotivationBannerProps {
 export function MotivationBanner({
   motivation,
   onRegenerate,
+  isLoading = false,
   isRegenerating = false,
   error = null,
 }: MotivationBannerProps) {
+  // Show loading skeleton while fetching initial motivation
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4 pt-4 pb-4">
+        <Card className="p-4 border-2 bg-muted/50">
+          <div className="flex items-center gap-3">
+            <Skeleton className="w-5 h-5 rounded-full flex-shrink-0" />
+            <div className="flex-1 space-y-2">
+              <Skeleton className="h-4 w-3/4" />
+              <Skeleton className="h-3 w-1/3" />
+            </div>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
   if (!motivation) return null;
 
   // Color scheme based on tone
