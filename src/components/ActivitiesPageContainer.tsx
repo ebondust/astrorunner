@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import type { AuthUserBasicDto, DistanceUnit, ActivityDto, CreateActivityCommand } from "@/types";
 import { MonthNavigation } from "./MonthNavigation";
 import { MonthYearPickerModal } from "./MonthYearPickerModal";
@@ -18,8 +18,6 @@ interface ActivitiesPageContainerProps {
   distanceUnit: DistanceUnit;
   currentMonth: number;
   currentYear: number;
-  initialMotivation: MotivationalMessage | null;
-  initialMotivationError: string | null;
   aiMotivationEnabled: boolean;
 }
 
@@ -32,8 +30,6 @@ export function ActivitiesPageContainer({
   distanceUnit,
   currentMonth,
   currentYear,
-  initialMotivation,
-  initialMotivationError,
   aiMotivationEnabled,
 }: ActivitiesPageContainerProps) {
   // Month navigation state
@@ -63,9 +59,57 @@ export function ActivitiesPageContainer({
   const [deletingActivity, setDeletingActivity] = useState<ActivityDto | undefined>();
 
   // Motivation state
-  const [motivation, setMotivation] = useState<MotivationalMessage | null>(initialMotivation);
+  const [motivation, setMotivation] = useState<MotivationalMessage | null>(null);
+  const [isLoadingMotivation, setIsLoadingMotivation] = useState(false);
   const [isRegeneratingMotivation, setIsRegeneratingMotivation] = useState(false);
-  const [motivationError, setMotivationError] = useState<string | null>(initialMotivationError);
+  const [motivationError, setMotivationError] = useState<string | null>(null);
+
+  // Fetch motivation on mount (client-side) to avoid blocking page render
+  useEffect(() => {
+    if (!aiMotivationEnabled) return;
+
+    const fetchMotivation = async () => {
+      setIsLoadingMotivation(true);
+      setMotivationError(null);
+
+      try {
+        const response = await fetch("/api/motivation/generate", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            userId: user.userId,
+            distanceUnit,
+            bypassCache: false,
+          }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || "Failed to load motivation");
+        }
+
+        const responseData = await response.json();
+
+        if (responseData.motivation) {
+          setMotivation(responseData.motivation);
+        }
+
+        if (responseData.error) {
+          setMotivationError(responseData.error);
+        }
+      } catch (error) {
+        logger.error("Failed to load motivation:", { error });
+        const errorMessage = error instanceof Error ? error.message : "Failed to load motivation";
+        setMotivationError(errorMessage);
+      } finally {
+        setIsLoadingMotivation(false);
+      }
+    };
+
+    fetchMotivation();
+  }, [aiMotivationEnabled, user.userId, distanceUnit]);
 
   // Handler: Open month picker
   const handleOpenMonthPicker = useCallback(() => {
@@ -224,10 +268,11 @@ export function ActivitiesPageContainer({
       />
 
       {/* Motivation Banner - only shown for current month */}
-      {showMotivation && motivation && (
+      {showMotivation && (isLoadingMotivation || motivation) && (
         <MotivationBanner
           motivation={motivation}
           onRegenerate={handleRegenerateMotivation}
+          isLoading={isLoadingMotivation}
           isRegenerating={isRegeneratingMotivation}
           error={motivationError}
         />
